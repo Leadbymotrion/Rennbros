@@ -255,6 +255,8 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       // An address just checked on the map wins over the remembered one.
       for (const k of REMEMBERED) if (!(k === "address" && fresh)) setField(k, String(saved[k] ?? ""));
       if (welcome) welcome.hidden = false;
+      // They chose to be remembered last time: keep that choice ticked.
+      if (rememberBox) rememberBox.checked = true;
     }
   } catch {}
   welcome?.querySelector("[data-forget]")?.addEventListener("click", () => {

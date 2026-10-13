@@ -140,6 +140,9 @@ for (const lang of ["en", "fr"]) {
   await p.click("[data-submit]");
   ok(await visible(p, '[data-err="terms"].on'), `${lang}: terms acceptance required`);
   await p.click('input[name="acceptTerms"]');
+  // "Remember my details" starts unticked (opt-in); tick it to test remembering.
+  ok(!(await p.$eval('input[name="remember"]', (el) => el.checked)), `${lang}: remember box starts unticked`);
+  await p.$eval('input[name="remember"]', (el) => el.click()); // on the details step, now hidden
   await Promise.all([p.waitForNavigation({ waitUntil: "networkidle2" }), p.click("[data-submit]")]);
   const url = new URL(p.url());
   ok(url.pathname.replace(/\/$/, "") === `${pre}/book/received` && /^DEMO-/.test(url.searchParams.get("ref") ?? ""), `${lang}: lands on confirmation`, url.pathname + url.search);

@@ -259,7 +259,7 @@ export function BookingForm({ lang }: { lang: Lang }) {
               <input type="hidden" name="photos" />
             </div>
             <label className="remember" data-remember hidden>
-              <input type="checkbox" name="remember" defaultChecked />
+              <input type="checkbox" name="remember" />
               <span>{b.remember.label}<span className="help">{b.remember.help}</span></span>
             </label>
           </fieldset>
