@@ -87,6 +87,7 @@ export function BookingForm({ lang }: { lang: Lang }) {
                         {MOUNT.tiers.map((r) => (
                           <label key={r.rim} className="pill"><input type="radio" name="rim" value={r.rim} /><span>{`${t.fmt.rims[r.rim]} · ${money(lang, r.price)}`}</span></label>
                         ))}
+                        <label className="pill"><input type="radio" name="rim" value="unknown" /><span>{`${b.tire.unknown} · ${money(lang, Math.max(...MOUNT.tiers.map((r) => r.price)))}`}</span></label>
                       </div>
                     </div>
                     <label className="remember tireopts__rf"><input type="checkbox" name="runflat" /><span>{b.tire.runFlat}</span></label>

@@ -527,3 +527,15 @@
 .co__accept { display: flex; gap: 0.6rem; align-items: flex-start; margin: 0.2rem 0 0.7rem; font-size: 0.9rem; line-height: 1.45; color: var(--color-ink-2); cursor: pointer; }
 .co__accept input { width: 1.1rem; height: 1.1rem; margin-top: 0.15rem; flex: none; accent-color: var(--color-red); }
 .co__accept .soft { color: var(--color-ink-3); }
+
+/* --- Emergency ---------------------------------------------------------------------- */
+.emerg__cta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; }
+.emerg__cta .btn { gap: 0.5rem; }
+@media (min-width: 56.25em) { .emerg__covers { grid-template-columns: repeat(3, 1fr); } }
+.emerg__covers { margin-top: 2rem; }
+.emerg__safety { display: flex; align-items: center; gap: 0.6rem; margin-top: 2rem; padding: 1rem 1.15rem; border-radius: var(--radius-sm); background: var(--color-red-wash); color: var(--color-red-ink); font-weight: 500; }
+.emerg__safety svg { flex: none; }
+
+/* Warranty: what's normal after a job */
+.doc__normal h3 { font-size: 1rem; font-weight: 600; margin: 0.9rem 0 0.35rem; }
+.doc__normal ul { margin: 0; padding-left: 1.1rem; list-style: disc; display: grid; gap: 0.35rem; color: var(--color-ink-2); }

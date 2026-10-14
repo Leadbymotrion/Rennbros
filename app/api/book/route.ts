@@ -99,7 +99,7 @@ export async function POST(request: Request) {
   if (!notify.email && !notify.text) return fail(request, lang, "notify", 400, isJSON);
   const note = [
     `Services: ${slugs.join(", ")} (about ${minutes} min with travel)`,
-    slugs.includes("tire-install") && `Tires to mount and balance: rim ${rim ? `${rim}"` : "size not given"}${runFlat ? ", run-flat (+$20)" : ""}`,
+    slugs.includes("tire-install") && `Tires to mount and balance: rim ${rim === "unknown" ? "size unknown (estimated at the largest size)" : rim ? `${rim}"` : "size not given"}${runFlat ? ", run-flat/EV (+$20)" : ""}`,
     `Address: ${[s("address"), s("postal").toUpperCase()].filter(Boolean).join(", ")}`,
     `Parking: ${s("parking")}`,
     office && `Office/business lot: customer confirmed they have, or will get, the property's permission (consent and disclosure ${s("parkingConsent").slice(9) || "accepted"}).`,

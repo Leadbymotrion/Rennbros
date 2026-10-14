@@ -34,7 +34,7 @@
 .head__brand { text-decoration: none; flex: none; }
 .head__nav { display: none; gap: 0.35rem; margin-inline: auto; }
 .head__link {
-  padding: 0.5rem 0.9rem; border-radius: 999px; text-decoration: none; font-size: 0.9375rem; color: var(--color-ink-2);
+  padding: 0.5rem 0.9rem; border-radius: 999px; text-decoration: none; font-size: 0.9375rem; color: var(--color-ink-2); white-space: nowrap;
   transition: background-color 180ms var(--ease-soft), color 180ms var(--ease-soft);
 }
 .head__link:hover, .head__link[aria-current="page"] { background: var(--color-mist); color: var(--color-ink); }
@@ -51,6 +51,8 @@
 @media (min-width: 40em) { .head__book { display: inline-flex; } }
 @media (min-width: 64em) { .head__nav { display: flex; } .head__end { margin-left: 0; } .head__end > .head__menu { display: none; } }
 @media (min-width: 77.5em) { .head__tel { display: inline-flex; } }
+/* Five links on a small laptop: tighter spacing so French still fits. */
+@media (min-width: 64em) and (max-width: 71.99em) { .head__in { gap: 1rem; } .head__nav { gap: 0.15rem; } .head__link { padding-inline: 0.65rem; } }
 
 /* --- Theme toggle ------------------------------------------------------------ */
 .theme { position: relative; overflow: hidden; width: 44px; }

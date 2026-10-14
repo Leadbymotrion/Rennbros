@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { DownloadSimple } from "@phosphor-icons/react/dist/ssr";
 import { business } from "@/lib/business";
 import { dict, type Lang } from "@/lib/i18n";
@@ -15,6 +16,7 @@ export function LegalPage({ lang, doc }: { lang: Lang; doc: Doc }) {
   const sq = t.pages.square;
   const last = p.sections.length - 1;
   const or = "or" in p ? p.or : "";
+  const normal = "normal" in p ? p.normal : null;
   return (
     <>
       <PageHead label={p.label} title={p.title} lead={p.lead} />
@@ -24,7 +26,8 @@ export function LegalPage({ lang, doc }: { lang: Lang; doc: Doc }) {
           <a className="link soft" href={p.doc.otherHref} target="_blank" rel="noopener" download lang={lang === "en" ? "fr" : "en"}>{p.doc.other}</a>
         </p>
         {p.sections.map(([h, body], i) => (
-          <section key={h}>
+          <Fragment key={h}>
+          <section>
             <h2 className="d4">{h}</h2>
             <p>
               {body}
@@ -34,6 +37,19 @@ export function LegalPage({ lang, doc }: { lang: Lang; doc: Doc }) {
               )}
             </p>
           </section>
+          {normal && i === normal.after && (
+            <section className="doc__normal">
+              <h2 className="d4">{normal.title}</h2>
+              <p>{normal.lead}</p>
+              {normal.groups.map(([title, items]) => (
+                <div key={title}>
+                  <h3>{title}</h3>
+                  <ul>{items.map((x) => <li key={x}>{x}</li>)}</ul>
+                </div>
+              ))}
+            </section>
+          )}
+          </Fragment>
         ))}
         {(doc === "terms" || doc === "disclosures") && (
           <section>

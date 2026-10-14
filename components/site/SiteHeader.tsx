@@ -17,6 +17,7 @@ export function SiteHeader({ lang }: { lang: Lang }) {
     ["/how-it-works", t.nav.how],
     ["/area", t.nav.area],
     ["/faq", t.nav.faq],
+    ["/emergency", t.nav.emergency],
   ];
   const links = nav.map(([p, label]) => ({ href: href(lang, p), label }));
   return (
