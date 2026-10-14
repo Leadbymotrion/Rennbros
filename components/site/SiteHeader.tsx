@@ -1,4 +1,4 @@
-import { List, Phone, WhatsappLogo, X } from "@phosphor-icons/react/dist/ssr";
+import { CaretDown, ChatText, List, Phone, WhatsappLogo, X } from "@phosphor-icons/react/dist/ssr";
 import { business, whatsappHref } from "@/lib/business";
 import { dict, href, type Lang } from "@/lib/i18n";
 import { Wordmark } from "./Wordmark";
@@ -56,10 +56,18 @@ export function SiteHeader({ lang }: { lang: Lang }) {
         </nav>
         <div className="menu__foot page">
           <a className="btn btn--red" href={href(lang, "/book")}>{t.nav.book}</a>
-          <a className="btn btn--ghost" href={`tel:${business.phone.tel}`}>
-            <Phone size={18} weight="light" aria-hidden />
-            <span className="num">{business.phone.display}</span>
-          </a>
+          {/* The number opens a choice: call or text. Native details, no script needed. */}
+          <details className="menu__phone">
+            <summary className="btn btn--ghost">
+              <Phone size={18} weight="light" aria-hidden />
+              <span className="num">{business.phone.display}</span>
+              <CaretDown size={16} weight="bold" aria-hidden className="menu__caret" />
+            </summary>
+            <div className="menu__phone-pick">
+              <a className="btn btn--ghost" href={`tel:${business.phone.tel}`}><Phone size={18} weight="light" aria-hidden />{t.nav.call}</a>
+              <a className="btn btn--ghost" href={`sms:${business.phone.tel}`}><ChatText size={18} weight="light" aria-hidden />{t.nav.text}</a>
+            </div>
+          </details>
           <a className="btn btn--ghost" href={whatsappHref(t.nav.whatsappHello)} target="_blank" rel="noopener noreferrer">
             <WhatsappLogo size={18} weight="light" aria-hidden />
             {t.nav.whatsapp}

@@ -79,6 +79,11 @@
 .menu__nav a[aria-current="page"] { color: var(--color-red-ink); }
 .menu__foot { margin-top: auto; display: grid; gap: 0.6rem; }
 .menu__lang { justify-self: center; margin-top: 0.6rem; }
+.menu__phone > summary { list-style: none; cursor: pointer; width: 100%; }
+.menu__phone > summary::-webkit-details-marker { display: none; }
+.menu__caret { transition: transform 180ms var(--ease-soft); }
+.menu__phone[open] .menu__caret { transform: rotate(180deg); }
+.menu__phone-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.6rem; }
 
 /* --- Footer -------------------------------------------------------------------- */
 .foot { background: var(--color-mist); border-top: 1px solid var(--color-rule); margin-top: 6rem; }
