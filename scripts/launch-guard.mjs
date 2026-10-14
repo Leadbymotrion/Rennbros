@@ -33,7 +33,6 @@ if (/cancellationHours: null/.test(business)) note.push("No cancellation window 
 if (!env.NEXT_PUBLIC_GOOGLE_MAPS_KEY) note.push("Map runs on OpenFreeMap + Photon (no key). Set NEXT_PUBLIC_GOOGLE_MAPS_KEY to use Google Maps.");
 note.push("Photographs are generated stand-ins: replace with the Renn Bros shoot before launch (public/media, same file names).");
 note.push("Home page names car brands (\"Trusted by owners of\"): confirm the client is comfortable with this (their earlier no-marques rule) and that the claim is true.");
-note.push("Remove the noindex header in next.config.ts headers() when this concept goes live.");
 note.push("Privacy page: name the person responsible for personal information (Québec Law 25).");
 
 for (const b of block) console.log(`BLOCK  ${b}`);

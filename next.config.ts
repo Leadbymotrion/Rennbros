@@ -23,12 +23,8 @@ const nextConfig: NextConfig = {
   },
   devIndicators: false,
   images: { formats: ["image/avif", "image/webp"] },
-  /* Concept preview: keep every page out of search until launch. Remove on
-     the concept that goes live on RennBros.com (the launch guard says so).
-     Set here, not in netlify.toml: pages are served by Next, not as files. */
   async headers() {
     return [
-      { source: "/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
       {
         // Security headers on every response. No full Content-Security-Policy
         // (Square, Apple Pay, Google Pay, the map and the VIN reader load from

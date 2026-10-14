@@ -101,6 +101,17 @@ export const business = {
   },
 } as const;
 
+/** Where the footer's review button goes. With the Google Business Profile's
+ *  Place ID (GOOGLE_PLACE_ID, also used for the reviews section) it opens
+ *  Google's "write a review" form directly; until then, a Google search for
+ *  the business, whose profile panel has the review button. */
+export function googleReviewHref(): string {
+  const id = process.env.GOOGLE_PLACE_ID;
+  return id
+    ? `https://search.google.com/local/writereview?placeid=${encodeURIComponent(id)}`
+    : `https://www.google.com/search?q=${encodeURIComponent(`${business.name} mobile mechanic`)}`;
+}
+
 /** A WhatsApp chat with the business number, optionally with a first line typed in. */
 export function whatsappHref(hello?: string): string {
   const n = business.phone.tel.replace(/\D/g, "");

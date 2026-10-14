@@ -1,5 +1,5 @@
-import { FacebookLogo, InstagramLogo, WhatsappLogo } from "@phosphor-icons/react/dist/ssr";
-import { business } from "@/lib/business";
+import { FacebookLogo, GoogleLogo, InstagramLogo, WhatsappLogo } from "@phosphor-icons/react/dist/ssr";
+import { business, googleReviewHref } from "@/lib/business";
 import { dict, href, servicesIn, type Lang } from "@/lib/i18n";
 import { Wordmark } from "./Wordmark";
 
@@ -27,6 +27,11 @@ export function SiteFooter({ lang }: { lang: Lang }) {
                   </li>
                 );
               })}
+              <li>
+                <a href={googleReviewHref()} rel="noopener" target="_blank" aria-label={t.footer.review} title={t.footer.review}>
+                  <GoogleLogo size={20} weight="light" aria-hidden />
+                </a>
+              </li>
             </ul>
           </div>
         </div>

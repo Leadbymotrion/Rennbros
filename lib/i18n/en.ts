@@ -616,6 +616,7 @@ export const en = {
     privacy: "Privacy",
     disclosures: "Disclosures",
     rights: "All rights reserved",
+    review: "Leave us a Google review",
     squareLabel: "Payments processed by Square:",
     squarePrivacy: "Privacy",
     squareTerms: "Terms",

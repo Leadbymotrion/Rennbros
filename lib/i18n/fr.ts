@@ -619,6 +619,7 @@ export const fr: Dict = {
     privacy: "Confidentialité",
     disclosures: "Divulgations",
     rights: "Tous droits réservés",
+    review: "Laissez-nous un avis Google",
     squareLabel: "Paiements traités par Square :",
     squarePrivacy: "Confidentialité",
     squareTerms: "Conditions",
