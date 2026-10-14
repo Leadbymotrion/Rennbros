@@ -101,11 +101,15 @@ export const business = {
   },
 } as const;
 
-/** Where the footer's review button goes. With the Google Business Profile's
- *  Place ID (GOOGLE_PLACE_ID, also used for the reviews section) it opens
- *  Google's "write a review" form directly; until then, a Google search for
- *  the business, whose profile panel has the review button. */
+/** Where the footer's review button goes, first match wins:
+ *  GOOGLE_REVIEW_URL  the profile's own review link ("Ask for reviews", g.page/r/…);
+ *  GOOGLE_PLACE_ID    the Place ID (also used for the reviews section), which
+ *                     opens Google's "write a review" form;
+ *  otherwise          a Google search for the business, whose profile panel
+ *                     has the review button. */
 export function googleReviewHref(): string {
+  const link = process.env.GOOGLE_REVIEW_URL;
+  if (link && /^https:\/\//.test(link)) return link;
   const id = process.env.GOOGLE_PLACE_ID;
   return id
     ? `https://search.google.com/local/writereview?placeid=${encodeURIComponent(id)}`

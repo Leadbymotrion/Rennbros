@@ -171,6 +171,7 @@ comes from, is in `.env.example`):
 | `NEXT_PUBLIC_SQUARE_ENVIRONMENT` | no | `production` |
 | `GOOGLE_PLACES_API_KEY` | **yes** | Places API (New) key, restricted to that API |
 | `GOOGLE_PLACE_ID` | no | the Google Business Profile's Place ID |
+| `GOOGLE_REVIEW_URL` | no | the profile's review link (g.page/r/…), for the footer's review button |
 | `SQUARE_APP_SECRET` | **yes** | the app's production Application secret (OAuth tab); turns on booking approval |
 | `HERO_SEASON_OVERRIDE` | no | pin one hero: `winter`, `spring`, `summer` or `fall` (leave unset for the automatic switch) |
 
