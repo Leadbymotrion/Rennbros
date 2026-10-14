@@ -50,6 +50,8 @@ export function SiteFooter({ lang }: { lang: Lang }) {
           <ul>
             <li><a className="link" href={href(lang, "/how-it-works")}>{t.nav.how}</a></li>
             <li><a className="link" href={href(lang, "/area")}>{t.nav.area}</a></li>
+            <li><a className="link" href={href(lang, "/winter-tires")}>{t.pages.winter.label}</a></li>
+            <li><a className="link" href={href(lang, "/emergency")}>{t.nav.emergency}</a></li>
             <li><a className="link" href={href(lang, "/faq")}>{t.nav.faq}</a></li>
             <li><a className="link" href={href(lang, "/legal/warranty")}>{t.footer.warranty}</a></li>
             <li><a className="link" href={href(lang, "/legal/terms")}>{t.footer.terms}</a></li>

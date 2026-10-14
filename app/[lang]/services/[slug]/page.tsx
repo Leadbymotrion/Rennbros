@@ -48,7 +48,7 @@ export default async function Service({ params }: { params: Promise<{ lang: stri
             {s.sub && <p className="product__sub">{s.sub}</p>}
             <p className="lead">{s.long}</p>
             <dl className="product__facts">
-              <div><dt>{p.price}</dt><dd className="num">{s.pricing.kind === "tiers" ? moneyRange(lang, s.pricing.tiers[0].price, s.pricing.tiers[s.pricing.tiers.length - 1].price) : price(lang, s)}</dd><dd className="product__note">{p.priceNote[s.pricing.kind]}</dd></div>
+              <div><dt>{p.price}</dt><dd className="num">{s.pricing.kind === "tiers" ? moneyRange(lang, s.pricing.tiers[0].price, s.pricing.tiers[s.pricing.tiers.length - 1].price) : price(lang, s)}</dd><dd className="product__note">{p.priceNote[s.pricing.kind]}{p.priceExtra[slug] && <> <strong>{p.priceExtra[slug]}</strong></>}</dd></div>
               <div><dt>{p.time}</dt><dd className="num">{duration(lang, s.minutes)}</dd><dd className="product__note">{p.window(duration(lang, withTravel(s.minutes)))}</dd></div>
               <div><dt>{p.warranty}</dt><dd>{p.oneYear}</dd><dd className="product__note">{p.onParts}</dd></div>
             </dl>

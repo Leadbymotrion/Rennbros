@@ -15,7 +15,7 @@ const BLOCKED = [
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      { userAgent: "*", allow: "/", disallow: ["/api/", "/book/received"] },
+      { userAgent: "*", allow: "/", disallow: ["/api/", "/book/received", "/review", "/fr/review"] },
       { userAgent: BLOCKED, disallow: "/" },
     ],
     sitemap: `https://${business.domain.toLowerCase()}/sitemap.xml`,

@@ -539,3 +539,16 @@
 /* Warranty: what's normal after a job */
 .doc__normal h3 { font-size: 1rem; font-weight: 600; margin: 0.9rem 0 0.35rem; }
 .doc__normal ul { margin: 0; padding-left: 1.1rem; list-style: disc; display: grid; gap: 0.35rem; color: var(--color-ink-2); }
+
+/* --- Town pages and the winter-tire guide --------------------------------------------- */
+.town__services { list-style: none; margin: 2rem 0 0; padding: 0; display: grid; gap: 0.5rem; }
+@media (min-width: 50em) { .town__services { grid-template-columns: repeat(2, 1fr); gap: 0.5rem 1.5rem; } }
+.town__services a { display: flex; justify-content: space-between; gap: 1rem; padding: 0.9rem 1.1rem; border-radius: var(--radius-sm); background: var(--color-card); border: 1px solid var(--color-rule); text-decoration: none; color: var(--color-ink); font-weight: 500; transition: border-color 180ms var(--ease-soft); }
+.town__services a:hover { border-color: var(--color-ink); }
+.town__services .num { color: var(--color-ink-2); font-weight: 400; white-space: nowrap; }
+.town__near { list-style: none; margin: 1rem 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
+.town__near a { display: inline-flex; align-items: center; gap: 0.35rem; }
+.winter__flake { color: var(--color-red-ink); }
+@media (min-width: 50em) { .how__flow.winter__which { grid-template-columns: repeat(2, 1fr); } }
+.how__step .winter__price { font-family: var(--font-display); font-size: 1.35rem; color: var(--color-ink); }
+.winter__unsure { margin-top: 1.25rem; color: var(--color-ink-2); max-width: 60ch; }

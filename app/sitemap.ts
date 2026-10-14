@@ -1,12 +1,13 @@
 import type { MetadataRoute } from "next";
 import { business } from "@/lib/business";
 import { services } from "@/lib/services";
+import { townPages } from "@/lib/towns";
 import { href } from "@/lib/i18n";
 
 /** Every public page in both languages, each listing its counterpart. */
 export default function sitemap(): MetadataRoute.Sitemap {
   const site = `https://${business.domain.toLowerCase()}`;
-  const paths = ["/", "/services", ...services.map((s) => `/services/${s.slug}`), "/how-it-works", "/area", "/emergency", "/faq", "/book", "/legal/privacy", "/legal/warranty", "/legal/terms", "/legal/disclosures"];
+  const paths = ["/", "/services", ...services.map((s) => `/services/${s.slug}`), "/how-it-works", "/area", ...townPages.map((p) => `/area/${p.slug}`), "/winter-tires", "/emergency", "/faq", "/book", "/legal/privacy", "/legal/warranty", "/legal/terms", "/legal/disclosures"];
   return paths.flatMap((p) =>
     (["en", "fr"] as const).map((lang) => ({
       url: site + href(lang, p),

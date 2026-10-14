@@ -3,6 +3,7 @@ import { ChatText, EnvelopeSimple, MapPin, Phone } from "@phosphor-icons/react/d
 import { business } from "@/lib/business";
 import { alternates, dict, href, isLang, plain, town, type Lang } from "@/lib/i18n";
 import { PageHead } from "@/components/site/PageHead";
+import { townPages } from "@/lib/towns";
 import { ServiceMap } from "@/components/map/ServiceMap";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
@@ -35,6 +36,14 @@ export default async function Area({ params }: { params: Promise<{ lang: string 
               ))}
             </ul>
             {business.area.isPlaceholder && <p className="area__pending"><span className="tag">{t.draft}</span> {t.home.area.pending}</p>}
+          </div>
+          <div className="area__block">
+            <p className="label">{t.pages.town.localTitle}</p>
+            <ul className="town__near">
+              {townPages.map((tp) => (
+                <li key={tp.slug}><a className="link" href={href(lang, `/area/${tp.slug}`)}>{town(lang, tp.key)}</a></li>
+              ))}
+            </ul>
           </div>
           <div className="area__block">
             <p className="label">{t.home.area.hours}</p>
