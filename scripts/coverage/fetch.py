@@ -1,8 +1,9 @@
 import json, time, urllib.request, urllib.parse
 Q = {
  "Baie-D'Urfé":"Baie-D'Urfé, Québec","Beaconsfield":"Beaconsfield, Québec","Dorval":"Dorval, Québec","Hudson":"Hudson, Québec",
- "Île Bizard":"L'Île-Bizard–Sainte-Geneviève, Montréal","Kirkland":"Kirkland, Québec","L'Île-Perrot":"L'Île-Perrot, Québec",
- "Notre-Dame-de-l'Île-Perrot":"Notre-Dame-de-l'Île-Perrot, Québec","Pierrefonds":"Pierrefonds-Roxboro, Montréal","Pincourt":"Pincourt, Québec",
+ "Les Cèdres":"Les Cèdres, Québec","Pointe-des-Cascades":"Pointe-des-Cascades, Québec",
+ "Dollard-des-Ormeaux":"Dollard-des-Ormeaux, Québec","Kirkland":"Kirkland, Québec","L'Île-Perrot":"L'Île-Perrot, Québec",
+ "Notre-Dame-de-l'Île-Perrot":"Notre-Dame-de-l'Île-Perrot, Québec","Pierrefonds-Roxboro":"Pierrefonds-Roxboro, Montréal","Pincourt":"Pincourt, Québec",
  "Pointe-Claire":"Pointe-Claire, Québec","Rigaud":"Rigaud, Québec","Saint-Lazare":"Saint-Lazare, Vaudreuil-Soulanges",
  "Sainte-Anne-de-Bellevue":"Sainte-Anne-de-Bellevue, Québec","Senneville":"Senneville, Québec","Terrasse-Vaudreuil":"Terrasse-Vaudreuil, Québec",
  "Valleyfield":"Salaberry-de-Valleyfield, Québec","Vaudreuil-Dorion":"Vaudreuil-Dorion, Québec"}

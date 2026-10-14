@@ -26,19 +26,21 @@ export const business = {
   area: {
     /** Confirmed 2026-10-01: Rigaud to Dorval, down to Valleyfield, plus
      *  Dollard-des-Ormeaux, Les Cèdres and Pointe-des-Cascades. Île Bizard
-     *  removed 2026-10-04 at the owner's request. */
+     *  removed 2026-10-04 at the owner's request. Dollard-des-Ormeaux and
+     *  Pierrefonds-Roxboro listed by name 2026-10-13 (already inside the outline). */
     isPlaceholder: false,
     corners: { west: "Rigaud", north: "Pierrefonds", east: "Dorval", south: "Valleyfield" },
     towns: [
       "Baie-D'Urfé",
       "Beaconsfield",
+      "Dollard-des-Ormeaux",
       "Dorval",
       "Hudson",
       "Kirkland",
       "L'Île-Perrot",
       "Les Cèdres",
       "Notre-Dame-de-l'Île-Perrot",
-      "Pierrefonds",
+      "Pierrefonds-Roxboro",
       "Pincourt",
       "Pointe-Claire",
       "Pointe-des-Cascades",

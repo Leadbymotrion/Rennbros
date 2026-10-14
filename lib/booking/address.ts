@@ -37,6 +37,9 @@ const ALIASES: Record<string, string> = {
   "vaudreuil": "Vaudreuil-Dorion",
   "pointe claire": "Pointe-Claire",
   "baie d'urfe": "Baie-D'Urfé",
+  "pierrefonds": "Pierrefonds-Roxboro",
+  "roxboro": "Pierrefonds-Roxboro",
+  "ddo": "Dollard-des-Ormeaux",
 };
 
 /** The town in the typed address: one we serve if it's there (longest name wins), else the part after the first comma. */
