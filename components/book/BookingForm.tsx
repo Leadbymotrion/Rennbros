@@ -23,6 +23,8 @@ import { Wordmark } from "@/components/site/Wordmark";
 export function BookingForm({ lang }: { lang: Lang }) {
   const t = dict(lang);
   const b = t.book;
+  // Tax rates as the page's language writes them ("9.975%" / "9,975 %").
+  const pct = (rate: number) => new Intl.NumberFormat(lang === "fr" ? "fr-CA" : "en-CA", { style: "percent", maximumFractionDigits: 3 }).format(rate);
   const services = servicesIn(lang);
   const form = useRef<HTMLFormElement>(null);
   const started = useRef(false);
@@ -302,7 +304,8 @@ export function BookingForm({ lang }: { lang: Lang }) {
                   </fieldset>
                   <dl className="co__totals">
                     <div><dt>{b.confirm.payEstimate}</dt><dd className="num" data-pay-estimate /></div>
-                    <div><dt>{b.confirm.payTax}</dt><dd className="num" data-pay-tax /></div>
+                    <div><dt>{b.confirm.payGst(pct(business.tax.gst))}</dt><dd className="num" data-pay-gst /></div>
+                    <div><dt>{b.confirm.payQst(pct(business.tax.qst))}</dt><dd className="num" data-pay-qst /></div>
                     <div><dt>{b.confirm.payWithTax}</dt><dd className="num" data-pay-with-tax /></div>
                     {business.booking.depositPercent ? (
                       <>

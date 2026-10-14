@@ -572,7 +572,8 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       const pre = estimateOf(picked(), rim(), runFlat());
       const tx = taxesOn(pre);
       $("[data-pay-estimate]").textContent = money(cfg.lang, pre, true);
-      $("[data-pay-tax]").textContent = money(cfg.lang, tx.gst + tx.qst, true);
+      $("[data-pay-gst]").textContent = money(cfg.lang, tx.gst, true);
+      $("[data-pay-qst]").textContent = money(cfg.lang, tx.qst, true);
       $("[data-pay-with-tax]").textContent = money(cfg.lang, tx.total, true);
       // The button says what happens: pay, then send.
       if (cfg.square.appId && cents > 0) submit.textContent = b.confirm.payAndSend(due);
