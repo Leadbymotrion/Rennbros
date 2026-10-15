@@ -355,6 +355,21 @@ export function BookingForm({ lang }: { lang: Lang }) {
             </div>
           </fieldset>
 
+          {/* Square refused the booking (or the system failed): no dead end. */}
+          <dialog className="notice" data-fail-dialog aria-labelledby="fail-title">
+            <div className="notice__head">
+              <WarningCircle size={22} weight="fill" aria-hidden />
+              <h3 className="notice__title" id="fail-title">{b.failed.title}</h3>
+              <button type="button" className="notice__x" data-fail-close aria-label={b.failed.close}>×</button>
+            </div>
+            <p>{b.failed.body}</p>
+            <p className="notice__phone num"><a className="link" href={`tel:${business.phone.tel}`}>{business.phone.display}</a></p>
+            <div className="notice__actions">
+              <a className="btn btn--ghost" href={`sms:${business.phone.tel}`}><ChatText size={16} weight="bold" aria-hidden />{b.failed.text}</a>
+              <a className="btn btn--red" href={`tel:${business.phone.tel}`}>{b.failed.call} · <span className="num">{business.phone.display}</span></a>
+            </div>
+          </dialog>
+
           <div className="nav" data-nav>
             <button className="btn btn--ghost" type="button" data-back hidden><ArrowLeft size={16} weight="bold" aria-hidden />{b.back}</button>
             <button className="btn btn--red" type="button" data-next hidden>{b.next}<ArrowRight size={16} weight="bold" className="arrow" aria-hidden /></button>

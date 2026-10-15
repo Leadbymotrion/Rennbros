@@ -653,6 +653,13 @@ export const en = {
       close: "Close",
       blocked: "Office parking needs the property's permission. Accept the consent and disclosure, choose another parking spot, or change the address.",
     },
+    failed: {
+      title: "We couldn't finish your booking online",
+      body: "Our booking system couldn't take this request. Nothing was booked, and your card was not charged. Call or text Renn Bros and we'll book your visit with you.",
+      call: "Call",
+      text: "Text",
+      close: "Close",
+    },
     outside: {
       title: "Outside our booking area",
       body: "This address looks like it's outside the area we can book online. Please contact Renn Bros before booking: we'll tell you if we can make the trip.",

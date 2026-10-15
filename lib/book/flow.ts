@@ -315,6 +315,8 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const consentField = form.querySelector<HTMLInputElement>('[name="parkingConsent"]')!;
   const officeDialog = form.querySelector<HTMLDialogElement>("[data-office-dialog]");
   const outsideDialog = form.querySelector<HTMLDialogElement>("[data-outside-dialog]");
+  const failDialog = form.querySelector<HTMLDialogElement>("[data-fail-dialog]");
+  $$<HTMLButtonElement>("[data-fail-close]").forEach((x) => x.addEventListener("click", () => failDialog?.close()));
   const agree = form.querySelector<HTMLInputElement>("[data-office-agree]");
   const accept = form.querySelector<HTMLButtonElement>("[data-office-accept]");
   const atOffice = () => !!form.querySelector<HTMLInputElement>('input[name="parking"][data-office]:checked');
@@ -889,7 +891,9 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       console.error("[book]", err);
       alertText.textContent = b.confirm.errorBody;
       alert.classList.add("on");
-      alert.focus();
+      // The booking didn't go through: say so plainly, with the number to call.
+      if (failDialog?.showModal) failDialog.showModal();
+      else alert.focus();
     } finally {
       submit.removeAttribute("aria-busy");
       submit.disabled = false;

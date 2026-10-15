@@ -656,6 +656,13 @@ export const fr: Dict = {
       close: "Fermer",
       blocked: "Le stationnement de bureau exige la permission des lieux. Acceptez le consentement et la divulgation, choisissez un autre endroit, ou changez l’adresse.",
     },
+    failed: {
+      title: "Nous n’avons pas pu terminer votre réservation en ligne",
+      body: "Notre système de réservation n’a pas pu accepter cette demande. Rien n’a été réservé, et votre carte n’a pas été débitée. Appelez ou textez Renn Bros : nous réserverons votre visite avec vous.",
+      call: "Appeler",
+      text: "Texto",
+      close: "Fermer",
+    },
     outside: {
       title: "Hors de notre territoire de réservation",
       body: "Cette adresse semble à l’extérieur du territoire que nous réservons en ligne. Communiquez avec Renn Bros avant de réserver : nous vous dirons si nous pouvons nous déplacer.",
