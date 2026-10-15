@@ -321,11 +321,13 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
           probe = c;
           break;
         } catch (e) {
-          if (!(e instanceof SquareError && e.status === 404)) throw e;
+          // 404: the service is gone; 400: Square won't search it (not
+          // bookable online, or no team member). Either way, try the next.
+          if (!(e instanceof SquareError && (e.status === 404 || e.status === 400))) throw e;
           stale.push(c);
         }
       }
-      if (stale.length) console.error("[availability] Square service ids not found:", stale.join(", "));
+      if (stale.length) console.error("[availability] Square services not searchable:", stale.join(", "));
       if (!r) throw new SquareError(404, [{ code: "NOT_FOUND", field: `every service id (${stale.join(", ")})` }]);
       const open = new Set((r.availabilities ?? []).map((a) => Date.parse(a.start_at)));
       const step = r.availabilities?.[0]?.appointment_segments?.[0]?.duration_minutes || timing.each(probe);
