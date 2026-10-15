@@ -115,6 +115,8 @@ export interface BookingProvider {
   capture(paymentId: string): Promise<Payment>;
   /** Drop a hold (the booking failed): the customer is never charged. */
   release(paymentId: string): Promise<void>;
+  /** Which configured services still exist in Square (slug -> ok / missing). */
+  checkServices?(): Promise<Record<string, "ok" | "missing" | "not-a-variation">>;
 }
 
 export type SquareEnv = {
@@ -258,28 +260,44 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
       // and minimum notice. A visit can start at an arrival hour when every
       // half hour of the work plus the buffer after it is open. The offer is
       // the same every day, whatever Square's own time-slot setting.
-      const probe =
-        env.probeService && env.serviceVariations[env.probeService]
-          ? env.probeService
-          : Object.keys(env.serviceVariations).sort((a, b) => timing.each(a) - timing.each(b))[0];
-      const r = await call<{
-        availabilities?: { start_at: string; appointment_segments: { duration_minutes: number }[] }[];
-      }>("/v2/bookings/availability/search", {
-        body: {
-          query: {
-            filter: {
-              start_at_range: { start_at: start.toISOString(), end_at: end.toISOString() },
-              location_id: env.locationId,
-              segment_filters: [
-                {
-                  service_variation_id: variation(probe),
-                  ...(env.teamMemberId ? { team_member_id_filter: { any: [env.teamMemberId] } } : {}),
+      // The configured probe first, then the others shortest first: if a
+      // service was deleted in Square (its id is gone), the calendar still
+      // works from the next one, and the stale ids are reported.
+      const candidates = [
+        ...(env.probeService && env.serviceVariations[env.probeService] ? [env.probeService] : []),
+        ...Object.keys(env.serviceVariations).sort((a, b) => timing.each(a) - timing.each(b)),
+      ].filter((x, i, all) => all.indexOf(x) === i);
+      type Search = { availabilities?: { start_at: string; appointment_segments: { duration_minutes: number }[] }[] };
+      let r: Search | undefined;
+      let probe = candidates[0];
+      const stale: string[] = [];
+      for (const c of candidates) {
+        try {
+          r = await call<Search>("/v2/bookings/availability/search", {
+            body: {
+              query: {
+                filter: {
+                  start_at_range: { start_at: start.toISOString(), end_at: end.toISOString() },
+                  location_id: env.locationId,
+                  segment_filters: [
+                    {
+                      service_variation_id: variation(c),
+                      ...(env.teamMemberId ? { team_member_id_filter: { any: [env.teamMemberId] } } : {}),
+                    },
+                  ],
                 },
-              ],
+              },
             },
-          },
-        },
-      });
+          });
+          probe = c;
+          break;
+        } catch (e) {
+          if (!(e instanceof SquareError && e.status === 404)) throw e;
+          stale.push(c);
+        }
+      }
+      if (stale.length) console.error("[availability] Square service ids not found:", stale.join(", "));
+      if (!r) throw new SquareError(404, [{ code: "NOT_FOUND", field: `every service id (${stale.join(", ")})` }]);
       const open = new Set((r.availabilities ?? []).map((a) => Date.parse(a.start_at)));
       const step = r.availabilities?.[0]?.appointment_segments?.[0]?.duration_minutes || timing.each(probe);
       const minutes = timing.total(slugs);
@@ -397,6 +415,20 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
     },
     async release(paymentId) {
       await call(`/v2/payments/${encodeURIComponent(paymentId)}/cancel`, { body: {} });
+    },
+
+    async checkServices() {
+      const out: Record<string, "ok" | "missing" | "not-a-variation"> = {};
+      for (const slug of Object.keys(env.serviceVariations)) {
+        try {
+          const r = await call<{ object: { type: string; is_deleted?: boolean } }>(`/v2/catalog/object/${variation(slug)}`);
+          out[slug] = r.object.is_deleted ? "missing" : r.object.type === "ITEM_VARIATION" ? "ok" : "not-a-variation";
+        } catch (e) {
+          if (e instanceof SquareError && e.status === 404) out[slug] = "missing";
+          else throw e;
+        }
+      }
+      return out;
     },
   };
 }

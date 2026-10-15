@@ -9,6 +9,15 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: Request) {
   const url = new URL(request.url);
+  // ?check=services: which configured Square services still exist (no ids or secrets returned).
+  if (url.searchParams.get("check") === "services") {
+    const p = provider();
+    try {
+      return json({ provider: p.name, services: p.checkServices ? await p.checkServices() : null });
+    } catch (e) {
+      return json({ error: "check_failed", status: e instanceof SquareError ? e.status : null }, 502);
+    }
+  }
   const slugs = pickServices((url.searchParams.get("services") ?? url.searchParams.get("service") ?? "").split(","));
   if (!slugs) return json({ error: "unknown_service" }, 400);
   const days = Math.min(Math.max(Number(url.searchParams.get("days")) || 21, 1), 31);
