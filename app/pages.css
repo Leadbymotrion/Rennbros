@@ -136,7 +136,7 @@
     cursor: pointer; color: var(--color-ink); font-weight: 500; background: var(--color-mist); border-color: var(--color-rule);
     transition: border-color 180ms var(--ease-soft), background-color 180ms var(--ease-soft), color 180ms var(--ease-soft);
   }
-  .cal__grid .cal__day:not(:disabled):hover { border-color: var(--color-ink); background: var(--color-card); }
+  .cal__grid .cal__day:not(:disabled):not([aria-pressed="true"]):hover { border-color: var(--color-ink); background: var(--color-card); }
   .cal__grid .cal__day[aria-pressed="true"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
   .cal__grid .cal__day.is-today::after {
     content: ""; position: absolute; bottom: 5px; width: 4px; height: 4px; border-radius: 50%; background: var(--color-red);
