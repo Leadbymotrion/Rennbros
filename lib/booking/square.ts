@@ -117,6 +117,8 @@ export interface BookingProvider {
   release(paymentId: string): Promise<void>;
   /** Which configured services still exist in Square (slug -> ok / missing). */
   checkServices?(): Promise<Record<string, "ok" | "missing" | "not-a-variation">>;
+  /** The bookable services Square has now: item name, variation name and id (ids are not secret). */
+  listServices?(): Promise<{ item: string; variation: string; id: string; minutes: number | null }[]>;
 }
 
 export type SquareEnv = {
@@ -428,6 +430,23 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
           else throw e;
         }
       }
+      return out;
+    },
+
+    async listServices() {
+      const out: { item: string; variation: string; id: string; minutes: number | null }[] = [];
+      let cursor: string | undefined;
+      do {
+        const r = await call<{ objects?: { type: string; item_data?: { name?: string; product_type?: string; variations?: { id: string; item_variation_data?: { name?: string; service_duration?: number } }[] } }[]; cursor?: string }>(
+          `/v2/catalog/list?types=ITEM${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`,
+        );
+        for (const o of r.objects ?? []) {
+          if (o.item_data?.product_type !== "APPOINTMENTS_SERVICE") continue;
+          for (const v of o.item_data.variations ?? [])
+            out.push({ item: o.item_data.name ?? "", variation: v.item_variation_data?.name ?? "", id: v.id, minutes: v.item_variation_data?.service_duration ? v.item_variation_data.service_duration / 60000 : null });
+        }
+        cursor = r.cursor;
+      } while (cursor);
       return out;
     },
   };
