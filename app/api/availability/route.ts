@@ -1,4 +1,5 @@
 import { provider, earliest, pickServices } from "@/lib/booking/config";
+import { SquareError } from "@/lib/booking/square";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,13 @@ export async function GET(request: Request) {
     return json({ live: p.live, provider: p.name, slots });
   } catch (e) {
     console.error("[availability]", e);
-    return json({ error: "unavailable" }, 502);
+    // Square's own error code (never credentials), so a failure can be
+    // diagnosed from the response when the function logs aren't at hand.
+    const reason =
+      e instanceof SquareError
+        ? { status: e.status, codes: (Array.isArray(e.detail) ? e.detail : []).map((x: { code?: string; field?: string }) => [x.code, x.field].filter(Boolean).join(" ")) }
+        : { message: e instanceof Error ? e.message.slice(0, 120) : "error" };
+    return json({ error: "unavailable", reason }, 502);
   }
 }
 
