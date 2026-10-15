@@ -184,6 +184,17 @@ const asPayment = (p: SquarePayment): Payment => ({ id: p.id, status: p.status, 
 
 // Explicit fields, not constructor parameter properties: this file has to run
 // under plain type-stripping (Node, Vite, Astro) as well as full tsc.
+/**
+ * Services Renn Bros recreated in Square after the site was set up, keyed by
+ * slug. Used only when the id in SQUARE_SERVICES no longer exists, so fixing
+ * SQUARE_SERVICES in Netlify takes priority again.
+ * 2026-10-15: the single oil change became five oil-type services; the
+ * website's oil change books the plain "Oil Change + Filter Kit".
+ */
+const REPLACED_IDS: Record<string, string> = {
+  "oil-change": "ICEBJ2ETODLLHWZHZYIYSJEV",
+};
+
 export class SquareError extends Error {
   status: number;
   detail: unknown;
@@ -217,6 +228,22 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
     const id = env.serviceVariations[slug];
     if (!id) throw new Error(`No Square service variation for "${slug}"`);
     return id;
+  };
+  /** The configured id if Square still has it, else the known replacement
+   *  (REPLACED_IDS) for a service that was recreated in Square. */
+  const liveVariation = async (slug: string) => {
+    const id = variation(slug);
+    try {
+      await versionOf(id);
+      return id;
+    } catch (e) {
+      const next = REPLACED_IDS[slug];
+      if (e instanceof SquareError && e.status === 404 && next) {
+        console.error(`[square] "${slug}" id is gone in Square; using its replacement`);
+        return next;
+      }
+      throw e;
+    }
   };
 
   // A booking needs the variation's current version; read it once per variation.
@@ -329,7 +356,7 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
       const given = input.slot.segments?.length === input.slugs.length ? input.slot.segments : null;
       const segments = await Promise.all(
         input.slugs.map(async (slug, i) => {
-          const id = variation(slug);
+          const id = await liveVariation(slug);
           const teamMemberId = given?.[i]?.teamMemberId ?? env.teamMemberId;
           if (!teamMemberId) throw new Error("No team member for this slot");
           return {
