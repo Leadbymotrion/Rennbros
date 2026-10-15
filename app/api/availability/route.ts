@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     try {
       const services = p.checkServices ? await p.checkServices() : null;
       const missing = services && Object.values(services).some((v) => v !== "ok");
-      return json({ provider: p.name, services, ...(missing && p.listServices ? { inSquare: await p.listServices() } : {}) });
+      return json({ provider: p.name, services, ...((missing || url.searchParams.get("list") === "1") && p.listServices ? { inSquare: await p.listServices() } : {}) });
     } catch (e) {
       return json({ error: "check_failed", status: e instanceof SquareError ? e.status : null }, 502);
     }

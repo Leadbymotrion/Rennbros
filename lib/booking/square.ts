@@ -118,7 +118,7 @@ export interface BookingProvider {
   /** Which configured services still exist in Square (slug -> ok / missing). */
   checkServices?(): Promise<Record<string, "ok" | "missing" | "not-a-variation" | "not-bookable-online" | "no-team-member">>;
   /** The bookable services Square has now: item name, variation name and id (ids are not secret). */
-  listServices?(): Promise<{ item: string; variation: string; id: string; minutes: number | null }[]>;
+  listServices?(): Promise<{ item: string; variation: string; id: string; minutes: number | null; price: number | null; pricing: string | null; bookable: boolean | null }[]>;
 }
 
 export type SquareEnv = {
@@ -472,16 +472,16 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
     },
 
     async listServices() {
-      const out: { item: string; variation: string; id: string; minutes: number | null }[] = [];
+      const out: { item: string; variation: string; id: string; minutes: number | null; price: number | null; pricing: string | null; bookable: boolean | null }[] = [];
       let cursor: string | undefined;
       do {
-        const r = await call<{ objects?: { type: string; item_data?: { name?: string; product_type?: string; variations?: { id: string; item_variation_data?: { name?: string; service_duration?: number } }[] } }[]; cursor?: string }>(
+        const r = await call<{ objects?: { type: string; item_data?: { name?: string; product_type?: string; variations?: { id: string; item_variation_data?: { name?: string; service_duration?: number; pricing_type?: string; price_money?: { amount?: number }; available_for_booking?: boolean } }[] } }[]; cursor?: string }>(
           `/v2/catalog/list?types=ITEM${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`,
         );
         for (const o of r.objects ?? []) {
           if (o.item_data?.product_type !== "APPOINTMENTS_SERVICE") continue;
           for (const v of o.item_data.variations ?? [])
-            out.push({ item: o.item_data.name ?? "", variation: v.item_variation_data?.name ?? "", id: v.id, minutes: v.item_variation_data?.service_duration ? v.item_variation_data.service_duration / 60000 : null });
+            out.push({ item: o.item_data.name ?? "", variation: v.item_variation_data?.name ?? "", id: v.id, minutes: v.item_variation_data?.service_duration ? v.item_variation_data.service_duration / 60000 : null, price: v.item_variation_data?.price_money?.amount != null ? v.item_variation_data.price_money.amount / 100 : null, pricing: v.item_variation_data?.pricing_type ?? null, bookable: v.item_variation_data?.available_for_booking ?? null });
         }
         cursor = r.cursor;
       } while (cursor);
