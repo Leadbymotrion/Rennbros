@@ -116,7 +116,7 @@ export interface BookingProvider {
   /** Drop a hold (the booking failed): the customer is never charged. */
   release(paymentId: string): Promise<void>;
   /** Which configured services still exist in Square (slug -> ok / missing). */
-  checkServices?(): Promise<Record<string, "ok" | "missing" | "not-a-variation">>;
+  checkServices?(): Promise<Record<string, "ok" | "missing" | "not-a-variation" | "not-bookable-online" | "no-team-member">>;
   /** The bookable services Square has now: item name, variation name and id (ids are not secret). */
   listServices?(): Promise<{ item: string; variation: string; id: string; minutes: number | null }[]>;
 }
@@ -449,11 +449,20 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
     },
 
     async checkServices() {
-      const out: Record<string, "ok" | "missing" | "not-a-variation"> = {};
+      const out: Record<string, "ok" | "missing" | "not-a-variation" | "not-bookable-online" | "no-team-member"> = {};
       for (const slug of Object.keys(env.serviceVariations)) {
         try {
-          const r = await call<{ object: { type: string; is_deleted?: boolean } }>(`/v2/catalog/object/${variation(slug)}`);
-          out[slug] = r.object.is_deleted ? "missing" : r.object.type === "ITEM_VARIATION" ? "ok" : "not-a-variation";
+          const r = await call<{ object: { type: string; is_deleted?: boolean; item_variation_data?: { available_for_booking?: boolean; team_member_ids?: string[] } } }>(`/v2/catalog/object/${variation(slug)}`);
+          const v = r.object.item_variation_data;
+          out[slug] = r.object.is_deleted
+            ? "missing"
+            : r.object.type !== "ITEM_VARIATION"
+              ? "not-a-variation"
+              : v?.available_for_booking === false
+                ? "not-bookable-online"
+                : env.teamMemberId && v?.team_member_ids && !v.team_member_ids.includes(env.teamMemberId)
+                  ? "no-team-member"
+                  : "ok";
         } catch (e) {
           if (e instanceof SquareError && e.status === 404) out[slug] = "missing";
           else throw e;
