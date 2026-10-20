@@ -6,9 +6,10 @@
 <title>Renn Bros · Liens · Links</title>
 <meta name="description" content="Renn Bros, mécanique mobile et pneus · mobile mechanic and tires. Réserver, appeler, texter · Book, call, text.">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#111316">
+<meta name="theme-color" content="#f4f5f7">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" as="image" href="/links-assets/hero-900.jpg" imagesrcset="/links-assets/hero-900.jpg 900w, /links-assets/hero.jpg 1400w" imagesizes="100vw">
 <link rel="preload" href="/links-assets/ClashDisplay-600.woff2" as="font" type="font/woff2" crossorigin>
 <style>
   @font-face { font-family: "Clash"; src: url("/links-assets/ClashDisplay-600.woff2") format("woff2"); font-weight: 600; font-display: swap; }
@@ -16,82 +17,71 @@
   @font-face { font-family: "General"; src: url("/links-assets/GeneralSans-500.woff2") format("woff2"); font-weight: 500; font-display: swap; }
 
   :root {
-    --bg: #111316; --bg-2: #171a1e; --card: #1c2025; --card-2: #23282e;
-    --rule: rgba(255,255,255,0.08); --rule-2: rgba(255,255,255,0.14);
-    --ink: #f4f5f6; --ink-2: #b9bec5; --ink-3: #868c94;
-    --red: #c8161d; --red-hi: #ff3a41; --red-ink: #ff5a60;
+    --bg: #f4f5f7; --card: #ffffff; --mist: #eef0f3;
+    --ink: #1f2227; --ink-2: #4a4f57; --ink-3: #7a8089;
+    --rule: #e3e6ea; --rule-2: #d4d8de;
+    --red: #c8161d; --red-2: #a8121a; --red-wash: #fbecec;
     --ease: cubic-bezier(.16,1,.3,1);
-    --radius: 18px;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html { background: var(--bg); }
-  body {
-    margin: 0; min-height: 100dvh; color: var(--ink); background:
-      radial-gradient(120% 60% at 50% -10%, #2a1416 0%, transparent 60%),
-      linear-gradient(180deg, var(--bg-2), var(--bg) 40%);
-    font-family: "General", system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.45;
-    -webkit-font-smoothing: antialiased;
-  }
+  body { margin: 0; min-height: 100dvh; color: var(--ink); background: var(--bg); font-family: "General", system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.45; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
   a { color: inherit; text-decoration: none; }
-  .wrap { width: min(100% - 32px, 440px); margin-inline: auto; padding: max(14px, env(safe-area-inset-top)) 0 calc(32px + env(safe-area-inset-bottom)); position: relative; }
 
-  /* Language switch */
-  .lang { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 0; z-index: 3; display: flex; padding: 3px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid var(--rule); }
-  .lang button { all: unset; cursor: pointer; font: 500 12px/1 "General", sans-serif; letter-spacing: .1em; padding: 8px 11px; border-radius: 999px; color: var(--ink-3); transition: color .2s, background .3s var(--ease); }
-  .lang button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-  .lang button:focus-visible { outline: 2px solid var(--red-hi); outline-offset: 2px; }
+  /* Hero: the truck and trailer, with light snow falling over it */
+  .hero { position: relative; height: min(84vw, 380px); min-height: 290px; overflow: hidden; border-radius: 0 0 28px 28px; background: #dfe6ee; }
+  .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 62%; will-change: transform; }
+  .hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,24,30,.28) 0%, transparent 28%, transparent 70%, rgba(244,245,247,.55) 100%); pointer-events: none; }
+  @media (min-width: 560px) { .hero { width: min(100% - 32px, 520px); margin: 16px auto 0; border-radius: 28px; } }
 
-  /* Hero: the 3D tire under falling snow */
-  .hero { position: relative; height: 290px; margin: 0 -16px; }
-  .hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-  .hero::after { content: ""; position: absolute; inset: auto 0 0 0; height: 90px; background: linear-gradient(transparent, var(--bg)); pointer-events: none; }
-  .hero.nogl { background: radial-gradient(closest-side, rgba(200,22,29,.35), transparent 70%); }
+  .lang { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px; z-index: 3; display: flex; padding: 3px; border-radius: 999px; background: rgba(255,255,255,.72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.6); }
+  .lang button { all: unset; cursor: pointer; font: 500 12px/1 "General", sans-serif; letter-spacing: .1em; padding: 8px 11px; border-radius: 999px; color: var(--ink-2); transition: color .2s, background .3s var(--ease); }
+  .lang button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  .lang button:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
-  .id { text-align: center; margin-top: -54px; position: relative; z-index: 2; }
-  .mark { width: 66px; height: auto; display: block; margin: 0 auto 10px; filter: drop-shadow(0 6px 14px rgba(0,0,0,.55)); }
-  h1 { margin: 0; font: 600 34px/1 "Clash", sans-serif; letter-spacing: .02em; }
-  h1 span { color: var(--red-hi); }
-  .tag { margin: 8px 0 0; color: var(--ink-2); font-size: 15px; }
-  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 14px 0 0; padding: 0; list-style: none; }
-  .chips li { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); padding: 6px 10px; border: 1px solid var(--rule); border-radius: 999px; }
+  .wrap { width: min(100% - 32px, 440px); margin-inline: auto; padding-bottom: calc(32px + env(safe-area-inset-bottom)); position: relative; }
 
-  /* Primary action */
-  .book { position: relative; overflow: hidden; display: grid; grid-template-columns: 44px 1fr 20px; gap: 14px; align-items: center; margin-top: 26px; padding: 18px; border-radius: var(--radius); background: linear-gradient(135deg, #d81a22, #9e1016); box-shadow: 0 18px 36px -20px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.18); }
-  .book .ic { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.14); display: grid; place-items: center; }
+  .id { position: relative; z-index: 2; margin-top: -34px; background: var(--card); border-radius: 22px; padding: 18px 18px 16px; text-align: center; box-shadow: 0 18px 40px -26px rgba(31,34,39,.45), 0 1px 0 rgba(31,34,39,.04); }
+  .mark { width: 62px; height: auto; display: block; margin: 0 auto 8px; }
+  h1 { margin: 0; font: 600 30px/1 "Clash", sans-serif; letter-spacing: .02em; }
+  h1 span { color: var(--red); }
+  .tag { margin: 7px 0 0; color: var(--ink-2); font-size: 15px; }
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 12px 0 0; padding: 0; list-style: none; }
+  .chips li { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); padding: 6px 10px; background: var(--mist); border-radius: 999px; }
+
+  .book { position: relative; overflow: hidden; display: grid; grid-template-columns: 44px 1fr 20px; gap: 14px; align-items: center; margin-top: 14px; padding: 18px; border-radius: 20px; color: #fff; background: linear-gradient(135deg, #d81a22, #a8121a); box-shadow: 0 16px 30px -20px rgba(31,34,39,.7), inset 0 1px 0 rgba(255,255,255,.2); }
+  .book .ic { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.16); display: grid; place-items: center; }
   .book b { display: block; font: 600 19px/1.15 "Clash", sans-serif; letter-spacing: .01em; }
-  .book small { display: block; margin-top: 3px; font-size: 13px; color: rgba(255,255,255,.82); }
-  .book .shine { position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.22) 50%, transparent 65%); transform: translateX(-120%); pointer-events: none; }
+  .book small { display: block; margin-top: 3px; font-size: 13px; color: rgba(255,255,255,.86); }
+  .book .shine { position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.25) 50%, transparent 65%); transform: translateX(-120%); pointer-events: none; }
+  .book svg { fill: #fff; }
 
-  /* Quick actions */
-  .quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
-  .q { display: grid; justify-items: center; gap: 7px; padding: 14px 6px 12px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--rule); font-size: 13px; font-weight: 500; color: var(--ink-2); }
-  .q .ic { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--card-2); color: var(--ink); }
-  .q.wa .ic { color: #3ddc84; }
+  .quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .q { display: grid; justify-items: center; gap: 7px; padding: 14px 6px 12px; border-radius: 18px; background: var(--card); border: 1px solid var(--rule); font-size: 13px; font-weight: 500; color: var(--ink-2); }
+  .q .ic { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--mist); color: var(--ink); }
+  .q.wa .ic { background: #25d366; color: #fff; }
 
-  /* Link list */
-  .list { margin: 22px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
-  .row { display: grid; grid-template-columns: 40px 1fr 18px; gap: 14px; align-items: center; padding: 13px 14px; border-radius: 16px; background: var(--card); border: 1px solid var(--rule); transition: border-color .25s, background .25s; }
-  .row .ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--card-2); color: var(--ink); }
+  .label { margin: 24px 4px 8px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+  .list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .row { display: grid; grid-template-columns: 42px 1fr 18px; gap: 14px; align-items: center; padding: 12px 14px; border-radius: 16px; background: var(--card); border: 1px solid var(--rule); transition: border-color .25s, transform .3s var(--ease); }
+  .row .ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: var(--mist); color: var(--ink); overflow: hidden; }
   .row b { display: block; font-weight: 500; font-size: 15px; }
   .row small { display: block; font-size: 12.5px; color: var(--ink-3); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row .go { color: var(--ink-3); transition: transform .3s var(--ease), color .2s; }
-  .row.hot .ic { background: rgba(200,22,29,.18); color: var(--red-ink); }
-  .row.review .ic { color: #f4c542; }
-  @media (hover: hover) {
-    .row:hover { border-color: var(--rule-2); background: #20252b; }
-    .row:hover .go { transform: translate(2px,-2px); color: var(--ink); }
-    .q:hover { border-color: var(--rule-2); }
-  }
-  a:focus-visible { outline: 2px solid var(--red-hi); outline-offset: 3px; border-radius: 18px; }
+  .row.hot .ic { background: var(--red-wash); color: var(--red); }
+  .row.winter .ic { background: #e8f3fd; color: #1d7bd6; }
+  .ic.brand { background: none; padding: 0; }
+  .ic.brand svg, .ic.brand img { width: 42px; height: 42px; }
+  @media (hover: hover) { .row:hover { border-color: var(--rule-2); } .row:hover .go { transform: translate(2px,-2px); color: var(--ink); } .q:hover { border-color: var(--rule-2); } }
+  a:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; border-radius: 18px; }
   svg { width: 22px; height: 22px; fill: currentColor; display: block; }
   .go svg { width: 18px; height: 18px; }
 
-  .label { margin: 26px 2px 8px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
-  footer { margin-top: 26px; text-align: center; font-size: 12.5px; color: var(--ink-3); line-height: 1.6; }
+  footer { margin-top: 24px; text-align: center; font-size: 12.5px; color: var(--ink-3); line-height: 1.6; }
   footer .area { display: inline-flex; gap: 6px; align-items: center; }
   footer .area svg { width: 15px; height: 15px; }
 
-  /* Hidden until GSAP brings them in (shown at once without JS or with reduced motion) */
   .js .in { opacity: 0; }
   @media (prefers-reduced-motion: reduce) { .js .in { opacity: 1 !important; } }
 </style>
@@ -100,19 +90,22 @@
 <script>document.documentElement.classList.add("js");
   // Safety net: if the animation library never runs, show everything anyway.
   setTimeout(() => document.querySelectorAll(".in").forEach((el) => { if (getComputedStyle(el).opacity === "0") el.style.opacity = 1; }), 2500);</script>
-<main class="wrap">
+
+<div class="hero in" id="hero">
+  <img id="heroImg" src="/links-assets/hero-900.jpg" srcset="/links-assets/hero-900.jpg 900w, /links-assets/hero.jpg 1400w" sizes="(min-width: 560px) 520px, 100vw" alt="Le camion et la remorque Renn Bros dans une rue enneigée · The Renn Bros truck and trailer on a snowy street" width="1400" height="1045" fetchpriority="high">
+  <canvas id="snow" aria-hidden="true"></canvas>
   <div class="lang" role="group" aria-label="Langue / Language">
     <button type="button" data-lang="fr" aria-pressed="true">FR</button>
     <button type="button" data-lang="en" aria-pressed="false">EN</button>
   </div>
+</div>
 
-  <div class="hero in" id="hero" aria-hidden="true"><canvas id="tire"></canvas></div>
-
-  <header class="id">
-    <img class="mark in" src="/links-assets/rb-white.svg" alt="">
-    <h1 class="in"><span>RENN</span> BROS</h1>
-    <p class="tag in" data-t="tag"></p>
-    <ul class="chips in" data-chips></ul>
+<main class="wrap">
+  <header class="id in">
+    <img class="mark" src="/links-assets/rb-red.svg" alt="">
+    <h1><span>RENN</span> BROS</h1>
+    <p class="tag" data-t="tag"></p>
+    <ul class="chips" data-chips></ul>
   </header>
 
   <a class="book in" data-href="book">
@@ -128,18 +121,18 @@
     <a class="q wa in" href="https://wa.me/15148917366" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M187.58,144.84l-32-16a8,8,0,0,0-8,.5l-14.69,9.8a40.55,40.55,0,0,1-16-16l9.8-14.69a8,8,0,0,0,.5-8l-16-32A8,8,0,0,0,104,64a40,40,0,0,0-40,40,88.1,88.1,0,0,0,88,88,40,40,0,0,0,40-40A8,8,0,0,0,187.58,144.84ZM152,176a72.08,72.08,0,0,1-72-72A24,24,0,0,1,99.29,80.46l11.48,23L101,118a8,8,0,0,0-.73,7.51,56.47,56.47,0,0,0,30.15,30.15A8,8,0,0,0,138,155l14.61-9.74,23,11.48A24,24,0,0,1,152,176ZM128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"/></svg></span><span>WhatsApp</span></a>
   </div>
 
-  <ul class="list">
+  <ul class="list" style="margin-top:10px">
     <li><a class="row hot in" data-href="emergency"><span class="ic"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M120,16V8a8,8,0,0,1,16,0v8a8,8,0,0,1-16,0Zm80,32a8,8,0,0,0,5.66-2.34l8-8a8,8,0,0,0-11.32-11.32l-8,8A8,8,0,0,0,200,48ZM50.34,45.66A8,8,0,0,0,61.66,34.34l-8-8A8,8,0,0,0,42.34,37.66Zm87,26.45a8,8,0,1,0-2.64,15.78C153.67,91.08,168,108.32,168,128a8,8,0,0,0,16,0C184,100.6,163.93,76.57,137.32,72.11ZM232,176v24a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V176a16,16,0,0,1,16-16V128a88,88,0,0,1,88.67-88c48.15.36,87.33,40.29,87.33,89v31A16,16,0,0,1,232,176ZM56,160H200V129c0-40-32.05-72.71-71.45-73H128a72,72,0,0,0-72,72Zm160,40V176H40v24H216Z"/></svg></span><span><b data-t="emergency"></b><small data-t="emergencySub"></small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
-    <li><a class="row in" data-href="winter"><span class="ic"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M223.77,150.09a8,8,0,0,1-5.86,9.68l-24.64,6,6.46,24.11a8,8,0,0,1-5.66,9.8A8.25,8.25,0,0,1,192,200a8,8,0,0,1-7.72-5.93l-7.72-28.8L136,141.86v46.83l21.66,21.65a8,8,0,0,1-11.32,11.32L128,203.31l-18.34,18.35a8,8,0,0,1-11.32-11.32L120,188.69V141.86L79.45,165.27l-7.72,28.8A8,8,0,0,1,64,200a8.25,8.25,0,0,1-2.08-.27,8,8,0,0,1-5.66-9.8l6.46-24.11-24.64-6a8,8,0,0,1,3.82-15.54l29.45,7.23L112,128,71.36,104.54l-29.45,7.23A7.85,7.85,0,0,1,40,112a8,8,0,0,1-1.91-15.77l24.64-6L56.27,66.07a8,8,0,0,1,15.46-4.14l7.72,28.8L120,114.14V67.31L98.34,45.66a8,8,0,0,1,11.32-11.32L128,52.69l18.34-18.35a8,8,0,0,1,11.32,11.32L136,67.31v46.83l40.55-23.41,7.72-28.8a8,8,0,0,1,15.46,4.14l-6.46,24.11,24.64,6A8,8,0,0,1,216,112a7.85,7.85,0,0,1-1.91-.23l-29.45-7.23L144,128l40.64,23.46,29.45-7.23A8,8,0,0,1,223.77,150.09Z"/></svg></span><span><b data-t="winter"></b><small data-t="winterSub"></small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
+    <li><a class="row winter in" data-href="winter"><span class="ic"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M223.77,150.09a8,8,0,0,1-5.86,9.68l-24.64,6,6.46,24.11a8,8,0,0,1-5.66,9.8A8.25,8.25,0,0,1,192,200a8,8,0,0,1-7.72-5.93l-7.72-28.8L136,141.86v46.83l21.66,21.65a8,8,0,0,1-11.32,11.32L128,203.31l-18.34,18.35a8,8,0,0,1-11.32-11.32L120,188.69V141.86L79.45,165.27l-7.72,28.8A8,8,0,0,1,64,200a8.25,8.25,0,0,1-2.08-.27,8,8,0,0,1-5.66-9.8l6.46-24.11-24.64-6a8,8,0,0,1,3.82-15.54l29.45,7.23L112,128,71.36,104.54l-29.45,7.23A7.85,7.85,0,0,1,40,112a8,8,0,0,1-1.91-15.77l24.64-6L56.27,66.07a8,8,0,0,1,15.46-4.14l7.72,28.8L120,114.14V67.31L98.34,45.66a8,8,0,0,1,11.32-11.32L128,52.69l18.34-18.35a8,8,0,0,1,11.32,11.32L136,67.31v46.83l40.55-23.41,7.72-28.8a8,8,0,0,1,15.46,4.14l-6.46,24.11,24.64,6A8,8,0,0,1,216,112a7.85,7.85,0,0,1-1.91-.23l-29.45-7.23L144,128l40.64,23.46,29.45-7.23A8,8,0,0,1,223.77,150.09Z"/></svg></span><span><b data-t="winter"></b><small data-t="winterSub"></small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
     <li><a class="row in" data-href="services"><span class="ic"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M226.76,69a8,8,0,0,0-12.84-2.88l-40.3,37.19-17.23-3.7-3.7-17.23,37.19-40.3A8,8,0,0,0,187,29.24,72,72,0,0,0,88,96,72.34,72.34,0,0,0,94,124.94L33.79,177c-.15.12-.29.26-.43.39a32,32,0,0,0,45.26,45.26c.13-.13.27-.28.39-.42L131.06,162A72,72,0,0,0,232,96,71.56,71.56,0,0,0,226.76,69ZM160,152a56.14,56.14,0,0,1-27.07-7,8,8,0,0,0-9.92,1.77L67.11,211.51a16,16,0,0,1-22.62-22.62L109.18,133a8,8,0,0,0,1.77-9.93,56,56,0,0,1,58.36-82.31l-31.2,33.81a8,8,0,0,0-1.94,7.1L141.83,108a8,8,0,0,0,6.14,6.14l26.35,5.66a8,8,0,0,0,7.1-1.94l33.81-31.2A56.06,56.06,0,0,1,160,152Z"/></svg></span><span><b data-t="services"></b><small data-t="servicesSub"></small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
-    <li><a class="row in" data-href="home"><span class="ic"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M128,24h0A104,104,0,1,0,232,128,104.12,104.12,0,0,0,128,24Zm88,104a87.61,87.61,0,0,1-3.33,24H174.16a157.44,157.44,0,0,0,0-48h38.51A87.61,87.61,0,0,1,216,128ZM102,168H154a115.11,115.11,0,0,1-26,45A115.27,115.27,0,0,1,102,168Zm-3.9-16a140.84,140.84,0,0,1,0-48h59.88a140.84,140.84,0,0,1,0,48ZM40,128a87.61,87.61,0,0,1,3.33-24H81.84a157.44,157.44,0,0,0,0,48H43.33A87.61,87.61,0,0,1,40,128ZM154,88H102a115.11,115.11,0,0,1,26-45A115.27,115.27,0,0,1,154,88Zm52.33,0H170.71a135.28,135.28,0,0,0-22.3-45.6A88.29,88.29,0,0,1,206.37,88ZM107.59,42.4A135.28,135.28,0,0,0,85.29,88H49.63A88.29,88.29,0,0,1,107.59,42.4ZM49.63,168H85.29a135.28,135.28,0,0,0,22.3,45.6A88.29,88.29,0,0,1,49.63,168Zm98.78,45.6a135.28,135.28,0,0,0,22.3-45.6h35.66A88.29,88.29,0,0,1,148.41,213.6Z"/></svg></span><span><b data-t="site"></b><small>rennbros.com</small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
+    <li><a class="row in" data-href="home"><span class="ic brand"><img src="/favicon.svg" alt=""></span><span><b data-t="site"></b><small>rennbros.com</small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
   </ul>
 
   <p class="label in" data-t="follow"></p>
-  <ul class="list" style="margin-top:0">
-    <li><a class="row in" href="https://www.instagram.com/rennbrosmtl/" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160ZM176,24H80A56.06,56.06,0,0,0,24,80v96a56.06,56.06,0,0,0,56,56h96a56.06,56.06,0,0,0,56-56V80A56.06,56.06,0,0,0,176,24Zm40,152a40,40,0,0,1-40,40H80a40,40,0,0,1-40-40V80A40,40,0,0,1,80,40h96a40,40,0,0,1,40,40ZM192,76a12,12,0,1,1-12-12A12,12,0,0,1,192,76Z"/></svg></span><span><b>Instagram</b><small>@rennbrosmtl</small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
-    <li><a class="row in" href="https://www.facebook.com/rennbrosmtl" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm8,191.63V152h24a8,8,0,0,0,0-16H136V112a16,16,0,0,1,16-16h16a8,8,0,0,0,0-16H152a32,32,0,0,0-32,32v24H96a8,8,0,0,0,0,16h24v63.63a88,88,0,1,1,16,0Z"/></svg></span><span><b>Facebook</b><small>@rennbrosmtl</small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
-    <li><a class="row review in" href="/review" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M224,128a96,96,0,1,1-21.95-61.09,8,8,0,1,1-12.33,10.18A80,80,0,1,0,207.6,136H128a8,8,0,0,1,0-16h88A8,8,0,0,1,224,128Z"/></svg></span><span><b data-t="review"></b><small data-t="reviewSub"></small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
+  <ul class="list">
+    <li><a class="row in" href="https://www.instagram.com/rennbrosmtl/" target="_blank" rel="noopener"><span class="ic brand"><svg viewBox="0 0 42 42" aria-hidden="true"><defs><radialGradient id="igg" cx="30%" cy="107%" r="150%"><stop offset="0" stop-color="#fdf497"/><stop offset=".05" stop-color="#fdf497"/><stop offset=".45" stop-color="#fd5949"/><stop offset=".6" stop-color="#d6249f"/><stop offset=".9" stop-color="#285AEB"/></radialGradient></defs><rect width="42" height="42" rx="12" fill="url(#igg)"/><g transform="translate(9 9)" fill="#fff"><path d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/></g></svg></span><span><b>Instagram</b><small>@rennbrosmtl</small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
+    <li><a class="row in" href="https://www.facebook.com/rennbrosmtl" target="_blank" rel="noopener"><span class="ic brand"><svg viewBox="0 0 42 42" aria-hidden="true"><rect width="42" height="42" rx="12" fill="#0866FF"/><g transform="translate(9 9)" fill="#fff"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></g></svg></span><span><b>Facebook</b><small>@rennbrosmtl</small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
+    <li><a class="row in" href="/review" target="_blank" rel="noopener"><span class="ic brand"><svg viewBox="0 0 42 42" aria-hidden="true"><rect width="42" height="42" rx="12" fill="#ffffff" stroke="#e3e6ea"/><g transform="translate(10 10) scale(.4583)"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></g></svg></span><span><b data-t="review"></b><small data-t="reviewSub"></small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
     <li><a class="row in" href="mailto:info@RennBros.com"><span class="ic"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48ZM203.43,64,128,133.15,52.57,64ZM216,192H40V74.19l82.59,75.71a8,8,0,0,0,10.82,0L216,74.19V192Z"/></svg></span><span><b data-t="email"></b><small>info@RennBros.com</small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
     <li><a class="row in" href="/rennbros.vcf" download="Renn-Bros.vcf"><span class="ic"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M83.19,174.4a8,8,0,0,0,11.21-1.6,52,52,0,0,1,83.2,0,8,8,0,1,0,12.8-9.6A67.88,67.88,0,0,0,163,141.51a40,40,0,1,0-53.94,0A67.88,67.88,0,0,0,81.6,163.2,8,8,0,0,0,83.19,174.4ZM112,112a24,24,0,1,1,24,24A24,24,0,0,1,112,112Zm96-88H64A16,16,0,0,0,48,40V64H32a8,8,0,0,0,0,16H48v40H32a8,8,0,0,0,0,16H48v40H32a8,8,0,0,0,0,16H48v24a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V40A16,16,0,0,0,208,24Zm0,192H64V40H208Z"/></svg></span><span><b data-t="save"></b><small data-t="saveSub"></small></span><span class="go"><svg viewBox="0 0 256 256" aria-hidden="true" focusable="false"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></span></a></li>
   </ul>
@@ -151,7 +144,6 @@
 </main>
 
 <script src="/links-assets/gsap.min.js"></script>
-<script src="/links-assets/three.min.js"></script>
 <script>
 (() => {
   const T = {
@@ -189,29 +181,35 @@
     const t = T[lang];
     document.documentElement.lang = lang;
     document.querySelectorAll("[data-t]").forEach((el) => { el.textContent = t[el.dataset.t]; });
-    const chips = document.querySelector("[data-chips]");
-    chips.innerHTML = t.chips.map((c) => `<li>${c}</li>`).join("");
+    document.querySelector("[data-chips]").innerHTML = t.chips.map((c) => `<li>${c}</li>`).join("");
     document.querySelectorAll("[data-href]").forEach((a) => { a.href = t.paths[a.dataset.href]; });
     document.querySelectorAll(".lang button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
   };
-  const first = store.get("rennbros.links.lang") || ((navigator.language || "fr").toLowerCase().startsWith("en") ? "en" : "fr");
-  setLang(first);
+  setLang(store.get("rennbros.links.lang") || ((navigator.language || "fr").toLowerCase().startsWith("en") ? "en" : "fr"));
   document.querySelectorAll(".lang button").forEach((b) => b.addEventListener("click", () => { setLang(b.dataset.lang); store.set("rennbros.links.lang", b.dataset.lang); }));
 
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const G = window.gsap;
+  const img = document.getElementById("heroImg");
 
-  /* Entrance and touch feedback */
   if (G && !reduce) {
     G.timeline({ defaults: { ease: "expo.out", duration: 1.1 } })
-      .fromTo("#hero", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 1.6 })
-      .fromTo(".mark", { opacity: 0, y: 18, rotate: -8 }, { opacity: 1, y: 0, rotate: 0 }, 0.25)
-      .fromTo("h1", { opacity: 0, y: 22, letterSpacing: "0.12em" }, { opacity: 1, y: 0, letterSpacing: "0.02em" }, 0.35)
-      .fromTo(".tag, .chips", { opacity: 0, y: 14 }, { opacity: 1, y: 0, stagger: 0.08 }, 0.5)
-      .fromTo(".book", { opacity: 0, y: 26, scale: 0.97 }, { opacity: 1, y: 0, scale: 1 }, 0.62)
-      .fromTo(".q", { opacity: 0, y: 20 }, { opacity: 1, y: 0, stagger: 0.07 }, 0.72)
-      .fromTo(".row, .label, footer", { opacity: 0, y: 18 }, { opacity: 1, y: 0, stagger: 0.045 }, 0.82);
-    G.to(".book .shine", { x: "120%", duration: 1.3, ease: "power2.inOut", repeat: -1, repeatDelay: 3.2, delay: 1.8 });
+      .fromTo("#hero", { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power2.out" })
+      .fromTo(img, { scale: 1.16 }, { scale: 1.04, duration: 2.4 }, 0)
+      .fromTo(".id", { opacity: 0, y: 34 }, { opacity: 1, y: 0 }, 0.35)
+      .fromTo(".id .mark", { scale: 0.6, rotate: -10 }, { scale: 1, rotate: 0, duration: 1.2, ease: "back.out(1.8)" }, 0.45)
+      .fromTo(".id h1, .id .tag, .id .chips", { opacity: 0, y: 10 }, { opacity: 1, y: 0, stagger: 0.07 }, 0.55)
+      .fromTo(".book", { opacity: 0, y: 24, scale: 0.97 }, { opacity: 1, y: 0, scale: 1 }, 0.7)
+      .fromTo(".q", { opacity: 0, y: 18 }, { opacity: 1, y: 0, stagger: 0.07 }, 0.8)
+      .fromTo(".row, .label, footer", { opacity: 0, y: 16 }, { opacity: 1, y: 0, stagger: 0.04 }, 0.9);
+    // A slow drift on the photo, and a gentle parallax as the page scrolls.
+    G.to(img, { xPercent: -1.6, duration: 9, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 2.4 });
+    let ticking = false;
+    addEventListener("scroll", () => {
+      if (ticking) return; ticking = true;
+      requestAnimationFrame(() => { G.set(img, { y: Math.min(scrollY, 400) * 0.25 }); ticking = false; });
+    }, { passive: true });
+    G.to(".book .shine", { x: "120%", duration: 1.3, ease: "power2.inOut", repeat: -1, repeatDelay: 3.4, delay: 2 });
     document.querySelectorAll(".book, .q, .row").forEach((el) => {
       el.addEventListener("pointerdown", () => G.to(el, { scale: 0.97, duration: 0.15, ease: "power2.out" }));
       const up = () => G.to(el, { scale: 1, duration: 0.6, ease: "elastic.out(1, 0.45)" });
@@ -221,110 +219,29 @@
     document.querySelectorAll(".in").forEach((el) => (el.style.opacity = 1));
   }
 
-  /* The tire: rubber with tread lugs, a five-spoke rim, a red caliper, falling snow */
-  const canvas = document.getElementById("tire");
-  const THREE = window.THREE;
-  let gl = null;
-  try { gl = THREE && canvas.getContext("webgl", { antialias: true, alpha: true }); } catch {}
-  if (!gl) { document.getElementById("hero").classList.add("nogl"); return; }
-
-  const renderer = new THREE.WebGLRenderer({ canvas, context: gl, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.outputEncoding = THREE.sRGBEncoding;
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-  camera.position.set(0, 0.15, 7.2);
-
-  scene.add(new THREE.HemisphereLight(0xe8eef6, 0x0c0d10, 0.5));
-  const key = new THREE.DirectionalLight(0xffffff, 1.35); key.position.set(3.5, 4, 6); scene.add(key);
-  const fill = new THREE.DirectionalLight(0x9fb4d0, 0.35); fill.position.set(-4, 1, 3); scene.add(fill);
-  const rim = new THREE.PointLight(0xff3038, 1.1, 10); rim.position.set(-2.8, -1.2, -1.6); scene.add(rim);
-
-  const wheel = new THREE.Group();
-  const rubber = new THREE.MeshStandardMaterial({ color: 0x111215, roughness: 0.86, metalness: 0.03 });
-  const metal = new THREE.MeshStandardMaterial({ color: 0xc9ced6, roughness: 0.28, metalness: 0.9 });
-  const darkMetal = new THREE.MeshStandardMaterial({ color: 0x3a3f46, roughness: 0.4, metalness: 0.8 });
-  const red = new THREE.MeshStandardMaterial({ color: 0xc8161d, roughness: 0.35, metalness: 0.3, emissive: 0x3a0004 });
-
-  // A real tire cross-section (bead, sidewall, shoulder, tread), turned around the axle.
-  const profile = [[1.0,-0.4],[1.1,-0.46],[1.35,-0.49],[1.55,-0.47],[1.65,-0.42],[1.7,-0.33],[1.71,0],[1.7,0.33],[1.65,0.42],[1.55,0.47],[1.35,0.49],[1.1,0.46],[1.0,0.4]].map(([r, y]) => new THREE.Vector2(r, y));
-  const tire = new THREE.Mesh(new THREE.LatheGeometry(profile, 120), rubber);
-  tire.rotation.x = Math.PI / 2;
-  wheel.add(tire);
-  // Shallow tread blocks in two staggered rows.
-  const block = new THREE.BoxGeometry(0.05, 0.12, 0.27);
-  const LUGS = 60;
-  const lugs = new THREE.InstancedMesh(block, rubber, LUGS * 2);
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(1, 1, 1), p = new THREE.Vector3();
-  for (let i = 0; i < LUGS * 2; i++) {
-    const row = i % 2, a = ((Math.floor(i / 2) + row * 0.5) / LUGS) * Math.PI * 2;
-    p.set(Math.cos(a) * 1.725, Math.sin(a) * 1.725, row ? 0.16 : -0.16);
-    q.setFromEuler(new THREE.Euler(0, 0, a + (row ? 0.18 : -0.18)));
-    m.compose(p, q, s); lugs.setMatrixAt(i, m);
-  }
-  wheel.add(lugs);
-  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.98, 0.98, 0.5, 64, 1, true), darkMetal);
-  barrel.rotation.x = Math.PI / 2; wheel.add(barrel);
-  const lip = new THREE.Mesh(new THREE.TorusGeometry(0.96, 0.05, 12, 80), metal); lip.position.z = 0.26; wheel.add(lip);
-  for (let i = 0; i < 5; i++) {
-    const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.92, 0.07), metal);
-    const a = (i / 5) * Math.PI * 2;
-    spoke.position.set(Math.sin(a) * 0.48, Math.cos(a) * 0.48, 0.2); spoke.rotation.z = -a; wheel.add(spoke);
-  }
-  const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.24, 0.16, 32), metal); hub.rotation.x = Math.PI / 2; hub.position.z = 0.22; wheel.add(hub);
-  const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.78, 0.78, 0.06, 64), darkMetal); disc.rotation.x = Math.PI / 2; disc.position.z = 0.02;
-
-  const assembly = new THREE.Group();
-  assembly.add(disc);
-  const caliper = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.62, 0.22), red);
-  caliper.position.set(0.66, 0.42, 0.12); caliper.rotation.z = -0.55;
-  assembly.add(caliper, wheel);
-  assembly.rotation.set(0.08, -0.55, 0);
-  scene.add(assembly);
-
-  /* Snow */
-  const N = 420;
-  const pos = new Float32Array(N * 3), speed = new Float32Array(N);
-  for (let i = 0; i < N; i++) { pos[i * 3] = (Math.random() - 0.5) * 9; pos[i * 3 + 1] = (Math.random() - 0.5) * 6; pos[i * 3 + 2] = (Math.random() - 0.5) * 5; speed[i] = 0.25 + Math.random() * 0.55; }
-  const snowGeo = new THREE.BufferGeometry(); snowGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-  const dot = document.createElement("canvas"); dot.width = dot.height = 32;
-  const c2 = dot.getContext("2d"); const g = c2.createRadialGradient(16, 16, 0, 16, 16, 16); g.addColorStop(0, "rgba(255,255,255,1)"); g.addColorStop(1, "rgba(255,255,255,0)"); c2.fillStyle = g; c2.fillRect(0, 0, 32, 32);
-  const snow = new THREE.Points(snowGeo, new THREE.PointsMaterial({ size: 0.07, map: new THREE.CanvasTexture(dot), transparent: true, depthWrite: false, opacity: 0.9 }));
-  scene.add(snow);
-
+  /* Light snow over the photo (2D canvas: cheap, smooth, pauses when hidden) */
+  if (reduce) return;
+  const cv = document.getElementById("snow"), cx = cv.getContext("2d");
+  let W = 0, H = 0, dpr = Math.min(devicePixelRatio || 1, 2), flakes = [];
   const size = () => {
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    flakes = Array.from({ length: Math.round(W * H / 2600) }, () => ({ x: Math.random() * W, y: Math.random() * H, r: 0.6 + Math.random() * 2.1, v: 12 + Math.random() * 34, w: Math.random() * 6.28 }));
   };
   size(); addEventListener("resize", size);
-
-  /* Follow the finger or pointer, gently */
-  let tx = 0, ty = 0, cx = 0, cy = 0;
-  addEventListener("pointermove", (e) => { tx = (e.clientX / innerWidth - 0.5) * 0.5; ty = (e.clientY / innerHeight - 0.5) * 0.3; }, { passive: true });
-
-  let last = performance.now(), running = true, spin = 0;
-  const frame = (now) => {
-    if (!running) return;
+  let last = performance.now(), run = true;
+  const tick = (now) => {
+    if (!run) return;
     const dt = Math.min((now - last) / 1000, 0.05); last = now;
-    spin += dt * (reduce ? 0 : 0.55);
-    wheel.rotation.z = -spin;
-    cx += (tx - cx) * 0.05; cy += (ty - cy) * 0.05;
-    assembly.rotation.y = -0.55 + cx; assembly.rotation.x = 0.08 + cy;
-    if (!reduce) {
-      for (let i = 0; i < N; i++) {
-        pos[i * 3 + 1] -= speed[i] * dt; pos[i * 3] += Math.sin(now * 0.0006 + i) * 0.0015;
-        if (pos[i * 3 + 1] < -3) pos[i * 3 + 1] = 3;
-      }
-      snowGeo.attributes.position.needsUpdate = true;
+    cx.clearRect(0, 0, W, H);
+    for (const f of flakes) {
+      f.y += f.v * dt; f.w += dt; f.x += Math.sin(f.w) * 0.25;
+      if (f.y > H + 4) { f.y = -4; f.x = Math.random() * W; }
+      cx.globalAlpha = 0.35 + f.r / 4.5; cx.beginPath(); cx.arc(f.x, f.y, f.r, 0, 6.283); cx.fillStyle = "#ffffff"; cx.fill();
     }
-    renderer.render(scene, camera);
-    requestAnimationFrame(frame);
+    requestAnimationFrame(tick);
   };
-  requestAnimationFrame(frame);
-  document.addEventListener("visibilitychange", () => {
-    running = document.visibilityState === "visible";
-    if (running) { last = performance.now(); requestAnimationFrame(frame); }
-  });
+  requestAnimationFrame(tick);
+  document.addEventListener("visibilitychange", () => { run = document.visibilityState === "visible"; if (run) { last = performance.now(); requestAnimationFrame(tick); } });
 })();
 </script>
 </body>

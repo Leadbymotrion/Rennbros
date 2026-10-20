@@ -15,6 +15,10 @@ import { BeforeAfter } from "./BeforeAfter";
  * `photos` (the home page): the on-site photographs instead of the product
  * stills, and the worn/new slider on the brakes card.
  */
+/** Services shown with a dashboard warning light on the Services page (the
+ *  tire services and the pre-purchase inspection have none). */
+const LAMPS = new Set(["oil-change", "tpms", "brakes", "battery", "diagnostics", "ac-diagnostic"]);
+
 /** `level`: the card headings' rank, one below the heading the menu sits under. */
 export function Menu({ lang, headingId, panel = true, photos = false, level = 3 }: { lang: Lang; headingId?: string; panel?: boolean; photos?: boolean; level?: 2 | 3 }) {
   const H = level === 2 ? "h2" : "h3";
@@ -48,6 +52,7 @@ export function Menu({ lang, headingId, panel = true, photos = false, level = 3 
                     sizes="(min-width: 1280px) 400px, (min-width: 700px) 45vw, 92vw"
                     loading={!photos && i < 2 ? "eager" : undefined}
                   />
+                  {!photos && LAMPS.has(s.slug) && <img className="dish__lamp" src={`/media/lamps/${s.slug}.svg`} alt="" width={120} height={120} />}
                 </a>
               )}
               <div className="dish__body">
