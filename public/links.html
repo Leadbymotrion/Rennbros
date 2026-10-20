@@ -369,8 +369,8 @@
   document.addEventListener("visibilitychange", () => { run = !reduce && document.visibilityState === "visible"; if (run) { last = performance.now(); requestAnimationFrame(tick); } });
   // The website decides the season (date in Montréal, or a pinned season); follow it if it differs.
   // Saved to a home screen, phones freeze this page; like the website, look for a newer
-  // version every 25 minutes and on reopening, and refresh after 25+ minutes in the background.
-  const EVERY = 25 * 60 * 1000;
+  // version every hour and on reopening, and refresh after an hour or more in the background.
+  const EVERY = 60 * 60 * 1000;
   const build = () => fetch("/api/version", { cache: "no-store" }).then((r) => r.json()).then((j) => j.build || "").catch(() => "");
   let loaded = "", hiddenAt = 0;
   build().then((b) => { loaded = b; });

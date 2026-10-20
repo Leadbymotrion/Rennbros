@@ -6,14 +6,14 @@ import { useEffect } from "react";
 const BUILT = process.env.NEXT_PUBLIC_BUILD_ID ?? "";
 /** How often to look for a new version, and how long in the background
  *  before a reopened page is refreshed anyway. */
-const EVERY = 25 * 60 * 1000;
+const EVERY = 60 * 60 * 1000;
 
 /**
  * Keeps the site current when it's saved to a phone's home screen. Phones
  * freeze a home-screen app in the background and show the old page when it's
- * reopened; this checks for a newer deploy every 25 minutes and each time the
+ * reopened; this checks for a newer deploy every hour and each time the
  * app comes back, and reloads when one is out. A page left in the background
- * for 25 minutes or more is also refreshed when reopened.
+ * for an hour or more is also refreshed when reopened.
  *
  * Never mid-booking: once someone has typed or picked anything in the booking
  * form, the reload waits until they leave that page.

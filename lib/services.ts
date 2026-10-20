@@ -50,8 +50,8 @@ export const MOUNT: Extract<Pricing, { kind: "tiers" }> = {
 export const services: Service[] = [
   { slug: "oil-change", pricing: { kind: "hourly", rate: 125 }, priceFrom: 125, minutes: 60, image: "d-oil", photo: { name: "p05-oil", width: 1600, height: 1066 } },
   // The two tyre services follow Costco's split: are the other tyres already on their own rims?
-  { slug: "tires", pricing: { kind: "range", min: 80, max: 100, per: "vehicle" }, priceFrom: 80, minutes: 60, image: "d-tires", photo: { name: "p06-winter", width: 1517, height: 1011 } },
-  { slug: "tire-install", pricing: MOUNT, priceFrom: 100, minutes: 90, image: "d-install", photo: { name: "p04-mat", width: 1600, height: 1066 } },
+  { slug: "tires", pricing: { kind: "range", min: 80, max: 100, per: "vehicle" }, priceFrom: 80, minutes: 60, image: "d-tires", photo: { name: "p06-swap", width: 1600, height: 1067 } },
+  { slug: "tire-install", pricing: MOUNT, priceFrom: 100, minutes: 90, image: "d-install", photo: { name: "p04-balance", width: 1600, height: 1067 } },
   { slug: "tpms", pricing: { kind: "range", min: 40, max: 80, plus: "sensors" }, priceFrom: 40, minutes: 90, image: "d-tpms", photo: { name: "p15-tpms", width: 1600, height: 1073 } },
   { slug: "brakes", pricing: { kind: "hourly", rate: 125 }, priceFrom: 125, minutes: 120, image: "d-brakes", photo: { name: "p07-brakes", width: 1600, height: 1986 } },
   { slug: "battery", pricing: { kind: "hourly", rate: 125 }, priceFrom: 125, minutes: 60, image: "d-battery", photo: { name: "p08-battery", width: 1600, height: 1073 } },
