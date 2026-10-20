@@ -52,7 +52,12 @@ export function Menu({ lang, headingId, panel = true, photos = false, level = 3 
                     sizes="(min-width: 1280px) 400px, (min-width: 700px) 45vw, 92vw"
                     loading={!photos && i < 2 ? "eager" : undefined}
                   />
-                  {!photos && LAMPS.has(s.slug) && <img className="dish__lamp" src={`/media/lamps/${s.slug}.svg`} alt="" width={120} height={120} />}
+                  {!photos && LAMPS.has(s.slug) && (
+                    <>
+                      <img className="dish__lamp dish__lamp--light" src={`/media/lamps/${s.slug}-light.svg`} alt="" width={120} height={120} />
+                      <img className="dish__lamp dish__lamp--dark" src={`/media/lamps/${s.slug}.svg`} alt="" width={120} height={120} />
+                    </>
+                  )}
                 </a>
               )}
               <div className="dish__body">
