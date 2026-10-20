@@ -142,7 +142,7 @@ export const en = {
     "p07-brakes": "The new disc and caliper, fitted and torqued.",
     "d-oil": "Fresh full synthetic oil and a new filter.",
     "d-tires": "Three summer wheels on silver alloy rims stacked with a fourth leaning in front, beside a matching stack of winter wheels on black steel rims, dusted with snow.",
-    "d-install": "A stack of three bare silver alloy rims with a fourth leaning in front, beside a stack of new tires with a fourth leaning in front.",
+    "d-install": "Three wheels with silver five-spoke rims and new tires stacked with a fourth leaning in front, beside a stack of empty new tires with a fourth leaning in front.",
     "d-brakes": "A new disc, pads and caliper: one axle's worth.",
     "d-battery": "A new battery and the tester that checks the charging system.",
     "d-diag": "The diagnostic tablet and cable.",

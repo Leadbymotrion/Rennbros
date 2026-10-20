@@ -145,7 +145,7 @@ export const fr: Dict = {
     "p07-brakes": "Le disque et l’étrier neufs, posés et serrés au couple.",
     "d-oil": "De l’huile entièrement synthétique neuve et un filtre neuf.",
     "d-tires": "Trois roues d’été sur jantes en alliage argent empilées, une quatrième appuyée devant, à côté d’une pile semblable de roues d’hiver sur jantes d’acier noires, saupoudrées de neige.",
-    "d-install": "Une pile de trois jantes en alliage argent nues, une quatrième appuyée devant, à côté d’une pile de pneus neufs, un quatrième appuyé devant.",
+    "d-install": "Trois roues à jantes argent à cinq rayons avec pneus neufs, empilées, une quatrième appuyée devant, à côté d’une pile de pneus neufs vides, un quatrième appuyé devant.",
     "d-brakes": "Un disque, des plaquettes et un étrier neufs : un essieu complet.",
     "d-battery": "Une batterie neuve et le testeur qui vérifie la recharge.",
     "d-diag": "La tablette et le câble de diagnostic.",
