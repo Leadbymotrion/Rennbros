@@ -88,6 +88,36 @@
   footer .area { display: inline-flex; gap: 6px; align-items: center; }
   footer .area svg { width: 15px; height: 15px; }
 
+  /* Phones: tighter so the whole page reads in fewer swipes; tap targets stay 44px+. */
+  @media (max-width: 559px) {
+    .hero { height: min(62vw, 300px); min-height: 220px; border-radius: 0 0 22px 22px; }
+    .wrap { width: min(100% - 24px, 440px); }
+    .id { margin-top: -26px; padding: 13px 14px 12px; border-radius: 18px; }
+    .mark { width: 46px; margin-bottom: 5px; }
+    h1 { font-size: 26px; }
+    .tag { font-size: 14px; margin-top: 4px; }
+    .chips { gap: 5px; margin-top: 9px; }
+    .chips li { font-size: 10px; padding: 5px 8px; }
+    .book { grid-template-columns: 38px 1fr 18px; gap: 11px; margin-top: 10px; padding: 13px 14px; border-radius: 16px; }
+    .book .ic { width: 38px; height: 38px; border-radius: 10px; }
+    .book b { font-size: 17px; }
+    .book small { font-size: 12px; margin-top: 2px; }
+    .quick { gap: 7px; margin-top: 7px; }
+    .q { grid-auto-flow: column; justify-content: center; align-items: center; gap: 7px; padding: 8px 6px; border-radius: 14px; font-size: 13px; }
+    .q .ic { width: 30px; height: 30px; }
+    .q .ic svg { width: 18px; height: 18px; }
+    .label { margin: 16px 4px 6px; font-size: 10px; }
+    .list { gap: 6px; }
+    .row { grid-template-columns: 34px 1fr 16px; gap: 11px; padding: 8px 11px; border-radius: 13px; }
+    .row .ic { width: 34px; height: 34px; border-radius: 10px; }
+    .row .ic svg { width: 19px; height: 19px; }
+    .ic.brand svg, .ic.brand img { width: 34px; height: 34px; }
+    .row b { font-size: 14px; }
+    .row small { font-size: 12px; }
+    .go svg { width: 16px; height: 16px; }
+    footer { margin-top: 16px; font-size: 12px; }
+  }
+
   .js .in { opacity: 0; }
   @media (prefers-reduced-motion: reduce) { .js .in { opacity: 1 !important; } }
 </style>
