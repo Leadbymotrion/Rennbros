@@ -362,7 +362,7 @@ export const fr: Dict = {
       lead: "Ce que nous recueillons à la réservation, pourquoi, qui le traite, combien de temps nous le conservons et vos droits selon la loi québécoise sur la protection des renseignements personnels (Loi 25).",
       doc: { label: "Télécharger la Politique de confidentialité complète (PDF)", href: "/docs/renn-bros-privacy-fr.pdf", other: "English version (PDF)", otherHref: "/docs/renn-bros-privacy.pdf" },
       sections: [
-        ["Responsable", "Le propriétaire de Renn Bros est le responsable de la protection des renseignements personnels. Les questions, demandes et plaintes lui sont adressées à info@RennBros.com ou au 514 891-7366."],
+        ["Responsable", "Le président de Renn Bros (9572-4878 Québec inc.) est le responsable de la protection des renseignements personnels. Les questions, demandes et plaintes lui sont adressées à info@RennBros.com ou au 514 891-7366."],
         ["Ce que nous recueillons", "Seulement ce qu’il faut pour le travail : votre nom, votre numéro de téléphone, votre courriel, l’adresse où se trouve la voiture, les détails du véhicule (année, marque, modèle, NIV, dimension des jantes), ce que vous nous en dites, les photos que vous joignez et la façon dont vous souhaitez recevoir les avis."],
         ["Pourquoi", "Pour confirmer votre rendez-vous, arriver au bon endroit avec les bonnes pièces, préparer les évaluations et factures, honorer les garanties et tenir les registres exigés par la loi. Nous ne vendons pas vos renseignements, ne faisons pas de profilage et ne vous envoyons aucun marketing sans votre consentement."],
         ["Qui les traite", "Square (réservations et paiements), Netlify (hébergement du site et photos jointes), des services de carte et d’adresse (OpenFreeMap, Photon de komoot ou Google Maps) et le décodeur de véhicules de la NHTSA des États-Unis (le NIV seulement). Certains sont à l’extérieur du Québec; nous évaluons leur protection et nous appuyons sur des ententes écrites avant d’y communiquer des renseignements."],
@@ -412,22 +412,11 @@ export const fr: Dict = {
     emergency: {
       label: "Service d’urgence",
       title: "En panne aujourd’hui? Appelez-nous.",
-      lead: "Aide le jour même pour une batterie à plat, un pneu crevé ou des clés enfermées dans la voiture, chez vous, au travail ou là où la voiture est arrêtée en sécurité. Les urgences se font par téléphone seulement, à prix majoré.",
+      lead: "Aide le jour même pour une batterie à plat, un pneu crevé ou des clés enfermées dans la voiture. Le service d’urgence se fait le jour même, pas immédiatement, à prix majoré. Appelez-nous : nous verrons votre situation au téléphone.",
       call: "Appelez-nous",
       text: "Textez-nous",
       coversTitle: "Ce que nous couvrons",
-      covers: [
-        ["Batterie à plat", "Nous survoltons votre voiture, ou testons la batterie et la remplaçons sur place si elle est finie. Si la batterie n’est pas en cause, nous vous disons ce que nous avons trouvé."],
-        ["Pneu crevé", "Nous posons votre roue de secours là où la voiture est arrêtée en sécurité, hors de l’autoroute : votre entrée, un stationnement ou une rue tranquille. Par sécurité, nous ne travaillons pas sur l’accotement d’une autoroute."],
-        ["Clés enfermées dans la voiture", "Nous vous permettons de rentrer dans votre voiture. Ayez une pièce d’identité : nous n’ouvrons une voiture que pour son propriétaire ou son conducteur habituel."],
-      ] as [string, string][],
-      howTitle: "Avant d’appeler",
-      how: [
-        ["Le jour même, pas immédiatement", "Nous intégrons les urgences le jour même, dès que notre horaire le permet. Nous ne pouvons pas promettre un service immédiat ni une heure d’arrivée : nous vous disons quand nous pouvons être là avant de partir."],
-        ["Prix majoré", "Une visite d’urgence coûte plus cher qu’une visite réservée. Nous vous donnons le prix au téléphone, et rien n’est fait sans votre accord."],
-        ["Quand", "Du lundi au vendredi, de 8 h à 17 h, et de 18 h à 22 h pour les batteries à plat et les survoltages. Le samedi, sur entente."],
-      ] as [string, string][],
-      safety: "Sur l’autoroute, en danger ou bloquant la circulation? Appelez d’abord le 911.",
+      covers: ["Batterie à plat", "Pneu crevé", "Clés enfermées dans la voiture"],
     },
     warranty: {
       label: "Légal",

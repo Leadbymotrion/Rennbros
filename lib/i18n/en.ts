@@ -359,7 +359,7 @@ export const en = {
       lead: "What we collect when you book, why, who handles it, how long we keep it, and your rights under Québec's privacy law (Law 25).",
       doc: { label: "Download the full Privacy Policy (PDF)", href: "/docs/renn-bros-privacy.pdf", other: "Version française (PDF)", otherHref: "/docs/renn-bros-privacy-fr.pdf" },
       sections: [
-        ["Person in charge", "The Owner of Renn Bros is the person in charge of the protection of personal information. Questions, requests and complaints go to info@RennBros.com or (514) 891-7366."],
+        ["Person in charge", "The President of Renn Bros (9572-4878 Québec inc.) is the person in charge of the protection of personal information. Questions, requests and complaints go to info@RennBros.com or (514) 891-7366."],
         ["What we collect", "Only what the job needs: your name, phone number, email, the address where the car is, details of the vehicle (year, make, model, VIN, rim size), what you tell us about it, any photos you attach, and how you want to receive updates."],
         ["Why", "To confirm your booking, arrive at the right place with the right parts, prepare estimates and invoices, honour warranties and keep the records the law requires. We don't sell your information, profile you, or send you marketing without your consent."],
         ["Who handles it", "Square (bookings and payments), Netlify (website hosting and the photos you attach), map and address services (OpenFreeMap, Photon by komoot, or Google Maps) and the U.S. NHTSA vehicle decoder (the VIN only). Some are outside Québec; we assess their protection and rely on written agreements before information is sent there."],
@@ -409,22 +409,11 @@ export const en = {
     emergency: {
       label: "Emergency service",
       title: "Stuck today? Call us.",
-      lead: "Same-day help for a dead battery, a flat tire or keys locked in the car, at your home, at work or wherever the car is stopped safely. Emergencies are by phone only, at a premium price.",
+      lead: "Same-day help for a dead battery, a flat tire or keys locked in the car. Emergency service is same day, not immediate, at a premium price. Call us and we'll go over your situation on the phone.",
       call: "Call us now",
       text: "Text us",
       coversTitle: "What we cover",
-      covers: [
-        ["Dead battery", "We boost your car, or test the battery and replace it on the spot if it's done. If the battery isn't the cause, we tell you what we found."],
-        ["Flat tire", "We put your spare on wherever the car is stopped safely off the highway: your driveway, a parking lot or a quiet street. For safety, we don't work on highway shoulders."],
-        ["Keys locked in the car", "We get you back into your car. Have your ID ready: we only open a car for its owner or regular driver."],
-      ] as [string, string][],
-      howTitle: "Before you call",
-      how: [
-        ["Same day, not immediate", "We fit emergencies in on the same day, as soon as our schedule allows. We can't promise immediate service or an arrival time: we tell you when we can be there before we come."],
-        ["Premium price", "An emergency visit costs more than a booked visit. We give you the price on the phone, and nothing is done until you agree."],
-        ["When", "Monday to Friday, 8 am to 5 pm, and 6 to 10 pm for dead batteries and jump starts. Saturday by arrangement."],
-      ] as [string, string][],
-      safety: "On a highway, in danger or blocking traffic? Call 911 first.",
+      covers: ["Dead battery", "Flat tire", "Keys locked in the car"],
     },
     warranty: {
       label: "Legal",
