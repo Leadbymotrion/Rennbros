@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Renn Bros · Promo banner (sample)</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  @font-face { font-family: "Clash"; src: url("/links-assets/ClashDisplay-600.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+  @font-face { font-family: "General"; src: url("/links-assets/GeneralSans-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "General"; src: url("/links-assets/GeneralSans-500.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+  :root { --red: #c8161d; --ink: #1c1f24; --ink-3: #757a83; --paper: #f4f5f7; --rule: #e4e6e9; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: "General", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+  /* The banner: one slim strip above the site header. */
+  .promo { display: block; position: relative; overflow: hidden; background: #16181c; line-height: 0; animation: drop .7s cubic-bezier(.16,1,.3,1) both; }
+  .promo img { width: 100%; height: auto; display: block; }
+  .promo.light { background: #eceae6; }
+  @keyframes drop { from { transform: translateY(-100%); } to { transform: none; } }
+  /* Phones: keep the strip readable and let it glide slowly across. */
+  @media (max-width: 760px) {
+    .promo { height: 46px; }
+    .promo img { width: auto; height: 46px; max-width: none; animation: pan 14s ease-in-out infinite alternate; }
+    @keyframes pan { from { transform: translateX(0); } to { transform: translateX(calc(-100% + 100vw)); } }
+  }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 14px clamp(16px, 4vw, 40px); background: #fff; border-bottom: 1px solid var(--rule); }
+  header .mk { display: flex; align-items: center; gap: 10px; font: 600 17px/1 "Clash", sans-serif; }
+  header .mk img { width: 38px; }
+  header .mk b { color: var(--red); font-weight: 600; }
+  header nav { display: flex; gap: 22px; font-size: 14px; color: #555; }
+  header .cta { background: var(--red); color: #fff; padding: 10px 16px; border-radius: 99px; font-size: 14px; font-weight: 500; }
+  @media (max-width: 760px) { header nav { display: none; } }
+
+  main { max-width: 1100px; margin: 0 auto; padding: clamp(28px, 6vw, 72px) clamp(16px, 4vw, 40px); }
+  .ghost h1 { margin: 0; font: 600 clamp(34px, 6vw, 64px)/1 "Clash", sans-serif; letter-spacing: -.01em; color: #c9ccd1; }
+  .ghost p { margin: 14px 0 0; max-width: 520px; color: #b4b8be; font-size: 17px; }
+  .note { margin-top: 40px; padding: 18px 20px; border-radius: 16px; background: #fff; border: 1px solid var(--rule); font-size: 14.5px; line-height: 1.5; color: #4a4f57; }
+  .note b { color: var(--ink); }
+  .alt { margin-top: 28px; }
+  .alt p { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 8px; }
+  .alt .promo { border-radius: 10px; animation: none; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } }
+</style>
+</head>
+<body>
+  <a class="promo" href="#" aria-label="Winter tires are mandatory from December 1. Book your driveway swap. Book now"><img src="/promo-demo/strip-dark.png" alt=""></a>
+  <header>
+    <div class="mk"><img src="/links-assets/rb-red.svg" alt=""><span><b>RENN</b> BROS</span></div>
+    <nav><span>Services</span><span>How it works</span><span>Service area</span><span>FAQ</span></nav>
+    <span class="cta">Book a visit</span>
+  </header>
+  <main>
+    <div class="ghost"><h1>Your website<br>stays as it is.</h1><p>The banner sits above everything else and can be switched off at any time.</p></div>
+    <div class="note"><b>Sample promo banner.</b> One slim strip across the top of rennbros.com. Renn Bros would turn it on or off and change the text, the offer, the link and the end date, in English and French. The offer shown is only an example.</div>
+    <div class="alt"><p>Light version</p><a class="promo light" href="#" aria-label="Winter tires are mandatory from December 1. $10 off your swap. Book now"><img src="/promo-demo/strip-light.png" alt=""></a></div>
+  </main>
+</body>
+</html>
