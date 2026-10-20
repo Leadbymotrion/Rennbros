@@ -29,6 +29,8 @@ const nextConfig: NextConfig = {
   images: { formats: ["image/avif", "image/webp"] },
   async headers() {
     return [
+      // Downloads as a contact card on phones.
+      { source: "/rennbros.vcf", headers: [{ key: "Content-Type", value: "text/vcard; charset=utf-8" }, { key: "Content-Disposition", value: 'attachment; filename="Renn-Bros.vcf"' }] },
       {
         // Security headers on every response. No full Content-Security-Policy
         // (Square, Apple Pay, Google Pay, the map and the VIN reader load from
@@ -61,6 +63,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
+        // The QR-code links page: a standalone file in public/.
+        { source: "/links", destination: "/links.html" },
         { source: "/", destination: "/en" },
         {
           source: "/:path((?!fr(?:/|$)|en(?:/|$)|_next/|api/|\\.well-known/)(?!.*\\.[a-zA-Z0-9]+$).+)",
