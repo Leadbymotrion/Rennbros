@@ -29,6 +29,9 @@ const nextConfig: NextConfig = {
   images: { formats: ["image/avif", "image/webp"] },
   async headers() {
     return [
+      // The test copy (rennbros-test) stays out of search: NOINDEX=1 is set
+      // on that Netlify site only, never on the real one.
+      ...(process.env.NOINDEX === "1" ? [{ source: "/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }] : []),
       // Downloads as a contact card on phones.
       { source: "/rennbros.vcf", headers: [{ key: "Content-Type", value: "text/vcard; charset=utf-8" }, { key: "Content-Disposition", value: 'attachment; filename="Renn-Bros.vcf"' }] },
       {
