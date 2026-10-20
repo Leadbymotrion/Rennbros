@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { MobileBar } from "@/components/site/MobileBar";
 import { Chrome } from "@/components/site/Chrome";
+import { AutoUpdate } from "@/components/site/AutoUpdate";
 import { StructuredData } from "@/components/site/StructuredData";
 import { clash, general } from "../fonts";
 import "../globals.css";
@@ -82,6 +83,7 @@ export default async function Layout({ children, params }: { children: React.Rea
         <MobileBar lang={lang} />
         <span className="edge-sentinel edge-sentinel--end" aria-hidden="true" />
         <Chrome label={t.nav.top} />
+        <AutoUpdate />
       </body>
     </html>
   );
