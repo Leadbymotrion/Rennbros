@@ -104,6 +104,34 @@ export function BookingForm({ lang }: { lang: Lang }) {
                 </Fragment>
               ))}
             </div>
+            {PREVIEW && (
+              /* More than one car, same visit (test copy only, lib/preview.ts). */
+              <div className="cars" data-cars>
+                <div className="field">
+                  <span id="cars-label">{b.cars.legend}</span>
+                  <div className="pills" role="radiogroup" aria-labelledby="cars-label">
+                    {["1", "2", "3", "4"].map((n) => (
+                      <label key={n} className="pill"><input type="radio" name="cars" value={n} defaultChecked={n === "1"} /><span>{n === "4" ? b.cars.many : n}</span></label>
+                    ))}
+                  </div>
+                  <span className="help">{b.cars.help}</span>
+                </div>
+                <p className="cars__many" data-cars-many hidden>{b.cars.manyNote} <a href={`tel:${business.phone.tel}`}>{business.phone.display}</a></p>
+                <p className="err" data-err="carsMany">{b.cars.errMany}</p>
+                {[2, 3].map((n) => (
+                  <fieldset key={n} className="car" data-car={n} hidden>
+                    <legend className="car__title">{b.cars.servicesFor(n)}</legend>
+                    <div className="car__list">
+                      {services.filter((s) => s.slug !== "tire-install").map((s) => (
+                        <label key={s.slug} className="pill"><input type="checkbox" name={`car${n}Service`} value={s.slug} /><span>{s.name}</span></label>
+                      ))}
+                    </div>
+                  </fieldset>
+                ))}
+                <p className="help cars__tires" data-cars-tires hidden>{b.cars.tiresNote}</p>
+                <p className="err" data-err="carServices">{b.cars.errServices}</p>
+              </div>
+            )}
             <p className="total" data-total aria-live="polite" />
             <p className="price-notice">{b.confirm.priceNotice}</p>
             <p className="err" data-err="service">{b.invalid.service}</p>
@@ -257,6 +285,27 @@ export function BookingForm({ lang }: { lang: Lang }) {
               <p className="err" data-err="make">{b.invalid.make}</p>
               <p className="err" data-err="model">{b.invalid.model}</p>
             </div>
+            {PREVIEW && (
+              <div className="cars-more" data-cars-more hidden>
+                <h3 className="cars-more__title">{b.cars.detailsTitle}</h3>
+                <p className="help">{b.cars.detailsHelp}</p>
+                {[2, 3].map((n) => (
+                  <fieldset key={n} className="car car--details" data-car-details={n} hidden>
+                    <legend className="car__title">{b.cars.car(n)}</legend>
+                    <div className="grid3">
+                      <label className="field"><span>{b.you.year} <em className="opt">({b.you.optional})</em></span><input className="input" name={`car${n}Year`} inputMode="numeric" maxLength={4} /></label>
+                      <label className="field"><span>{b.you.make}</span><input className="input" name={`car${n}Make`} /></label>
+                      <label className="field"><span>{b.you.model}</span><input className="input" name={`car${n}Model`} /></label>
+                    </div>
+                    <label className="field">
+                      <span>{b.you.vin} <em className="opt">({b.cars.car(n)})</em></span>
+                      <input className="input" name={`car${n}Vin`} maxLength={17} autoCapitalize="characters" spellCheck={false} />
+                    </label>
+                  </fieldset>
+                ))}
+                <p className="err" data-err="carDetails">{b.cars.errDetails}</p>
+              </div>
+            )}
             <label className="field">
               <span>{b.you.notes} <em className="opt">({b.you.optional})</em></span>
               <textarea className="input" name="notes" rows={3} />

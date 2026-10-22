@@ -4,7 +4,8 @@ import { depositFor, estimateOf, estimateWithTax } from "@/lib/booking/deposit";
 import { checkout, DepositDeclined } from "@/lib/booking/checkout";
 import { MAX_PHOTOS, PHOTO_ID } from "@/lib/booking/photos";
 import { isRim, needsVin } from "@/lib/services";
-import { vinFormatOk } from "@/lib/book/vin";
+import { vinFormatOk, cleanVin } from "@/lib/book/vin";
+import { PREVIEW } from "@/lib/preview";
 import { overLimit } from "@/lib/ratelimit";
 import { business } from "@/lib/business";
 import { dict, href, type Lang } from "@/lib/i18n";
@@ -57,8 +58,35 @@ export async function POST(request: Request) {
   const missing = ["address", "postal", "parking", "name", "phone", "email", "make", "model"].filter((k) => !s(k));
   if (!slugs || missing.length) return fail(request, lang, "missing_fields", 400, isJSON, { missing });
   if (!/^\S+@\S+\.\S+$/.test(s("email"))) return fail(request, lang, "email", 400, isJSON);
+  // More than one car on the visit (test copy only): cars 2 and 3, each with
+  // its own services and a required VIN. Their services are in the list too.
+  type Extra = { car: number; services: string[]; year: string; make: string; model: string; vin: string };
+  let extras: Extra[] = [];
+  if (PREVIEW && data.cars) {
+    try {
+      const raw = typeof data.cars === "string" ? JSON.parse(data.cars) : data.cars;
+      extras = (Array.isArray(raw) ? raw : []).slice(0, 2).map((c: Record<string, unknown>, i: number) => ({
+        car: i + 2,
+        services: Array.isArray(c.services) ? c.services.map(String) : [],
+        year: String(c.year ?? "").trim().slice(0, 4),
+        make: String(c.make ?? "").trim().slice(0, 40),
+        model: String(c.model ?? "").trim().slice(0, 40),
+        vin: cleanVin(String(c.vin ?? "")),
+      }));
+    } catch {
+      return fail(request, lang, "bad_request", 400, isJSON);
+    }
+    if (extras.some((c) => !c.services.length || !c.make || !c.model || !vinFormatOk(c.vin))) return fail(request, lang, "cars", 400, isJSON);
+  }
+  // Car 1's own services: the list less each extra car's.
+  const car1 = [...slugs];
+  for (const x of extras.flatMap((c) => c.services)) {
+    const i = car1.indexOf(x);
+    if (i < 0) return fail(request, lang, "cars", 400, isJSON);
+    car1.splice(i, 1);
+  }
   // Oil changes and brakes: parts are matched to the exact car, so the VIN is required.
-  if (needsVin(slugs) && !vinFormatOk(s("vin"))) return fail(request, lang, "vin", 400, isJSON);
+  if (needsVin(car1) && !vinFormatOk(s("vin"))) return fail(request, lang, "vin", 400, isJSON);
   // Office or business lot: only with the customer's consent to the disclosure
   // (they have, or will get, the property's permission).
   const office = (["en", "fr"] as const).some((l) => dict(l).book.where.parkingOptions.at(-1) === s("parking"));
@@ -111,6 +139,8 @@ export async function POST(request: Request) {
     `Updates by: ${notify.email && notify.text ? "email and text" : notify.email ? "email only (no texts)" : "text only (no emails)"}`,
     `Vehicle: ${[s("year"), s("make"), s("model")].filter(Boolean).join(" ")}`,
     s("vin") && `VIN: ${s("vin")}`,
+    extras.length > 0 && `Car 1 services: ${car1.join(", ")}`,
+    ...extras.map((c) => `Car ${c.car}: ${[c.year, c.make, c.model].filter(Boolean).join(" ")} · VIN ${c.vin} · services: ${c.services.join(", ")}`),
     lang === "fr" && "Language: French — reply in French",
     s("notes") && `Notes: ${s("notes")}`,
     photoLinks.length > 0 && `Photos:\n${photoLinks.join("\n")}`,

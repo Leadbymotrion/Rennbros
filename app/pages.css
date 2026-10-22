@@ -107,6 +107,17 @@
     .grid3 { grid-template-columns: 6rem 1fr 1fr; }
     .span2 { grid-column: 1 / -1; }
   }
+  /* More than one car (test copy). */
+  .cars { display: grid; gap: 0.9rem; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--color-rule); }
+  .cars__many { margin: 0; padding: 0.8rem 1rem; border-radius: var(--radius-sm); background: var(--color-mist); font-size: 0.9375rem; }
+  .cars__many a { font-weight: 600; color: var(--color-red-ink); }
+  .car { border: 1px solid var(--color-rule-2); border-radius: var(--radius-sm); padding: 0.9rem 1rem 1rem; margin: 0; min-width: 0; }
+  .car__title { font-weight: 600; padding: 0 0.35rem; }
+  .car__list { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .car__list .pill span { font-size: 0.875rem; }
+  .cars-more { display: grid; gap: 0.9rem; margin: 1.25rem 0; }
+  .cars-more__title { font-size: 1.0625rem; font-weight: 600; margin: 0; }
+  .car--details { display: grid; gap: 0.75rem; }
   .opt { font-style: normal; font-weight: 400; color: var(--color-ink-3); }
 
   .err { display: none; color: var(--color-red-ink); font-size: 0.9375rem; margin-top: calc(0.625rem * -1); }

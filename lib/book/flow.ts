@@ -38,6 +38,25 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
 
   /** The ticked services, in menu order. */
   const picked = () => $$<HTMLInputElement>('input[name="service"]:checked').map((i) => i.value);
+  /** More than one car (test copy only; without the picker it's always 1).
+   *  "4" means 4 or more: booked by phone. */
+  const carCount = () => Number(form.querySelector<HTMLInputElement>('[name="cars"]:checked')?.value ?? "1");
+  const extraCars = () => {
+    const n = carCount();
+    if (n < 2 || n > 3) return [];
+    return [2, 3].slice(0, n - 1).map((i) => ({
+      n: i,
+      services: $$<HTMLInputElement>(`input[name="car${i}Service"]:checked`).map((x) => x.value),
+      year: value(`car${i}Year`),
+      make: value(`car${i}Make`),
+      model: value(`car${i}Model`),
+      vin: cleanVin(value(`car${i}Vin`)),
+    }));
+  };
+  /** Every service in the visit, car 1 first: what the time and estimate count. */
+  const allSlugs = () => [...picked(), ...extraCars().flatMap((c) => c.services)];
+  /** Each line of the visit with its car (1 = the main car). */
+  const lines = () => [...picked().map((slug) => ({ slug, car: 1 })), ...extraCars().flatMap((c) => c.services.map((slug) => ({ slug, car: c.n })))];
   const travel = business.booking.travelMinutes;
   /** "from $578 · about 4 hr on site, travel included" for a set of services. */
   // Tyres mounted on the customer's rims are priced by rim size (price list).
@@ -95,7 +114,12 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
 
   // --- Validation, one step at a time ------------------------------------
   const rules: Record<number, [string, (v: string) => boolean][]> = {
-    0: [["service", () => picked().length > 0], ["rim", () => !picked().includes("tire-install") || !!rim()]],
+    0: [
+      ["service", () => picked().length > 0],
+      ["rim", () => !picked().includes("tire-install") || !!rim()],
+      ["carsMany", () => carCount() < 4],
+      ["carServices", () => extraCars().every((c) => c.services.length > 0)],
+    ],
     1: [
       ["address", (v) => addressComplete(v)],
       ["postal", (v) => /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(v.trim())],
@@ -111,6 +135,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       ["vin", (v) => !needsVin(picked()) || vinFormatOk(v)],
       ["make", (v) => !!v],
       ["model", (v) => !!v],
+      ["carDetails", () => extraCars().every((c) => !!c.make && !!c.model && vinFormatOk(c.vin))],
     ],
   };
   const check = (n: number) => {
@@ -175,10 +200,23 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     $$("[data-vin-opt]").forEach((el) => (el.hidden = vinNeeded));
     $$("[data-vin-req]").forEach((el) => (el.hidden = !vinNeeded));
     form.querySelector('[name="vin"]')?.toggleAttribute("required", vinNeeded);
-    const list = picked().map((slug) => serviceIn(cfg.lang, slug)!);
+    // More than one car: show each extra car's services and details.
+    const cars = carCount();
+    $$<HTMLElement>("[data-car]").forEach((el) => (el.hidden = Number(el.dataset.car) > cars || cars > 3));
+    $$<HTMLElement>("[data-car-details]").forEach((el) => (el.hidden = Number(el.dataset.carDetails) > cars || cars > 3));
+    $$<HTMLElement>("[data-cars-more]").forEach((el) => (el.hidden = cars < 2 || cars > 3));
+    $$<HTMLElement>("[data-cars-tires]").forEach((el) => (el.hidden = cars < 2 || cars > 3));
+    $$<HTMLElement>("[data-cars-many]").forEach((el) => (el.hidden = cars < 4));
+    if (cars < 4) $('[data-err="carsMany"]')?.classList.remove("on");
+    const list = allSlugs().map((slug) => serviceIn(cfg.lang, slug)!);
     const label = (s: (typeof list)[number]) =>
       s.slug === "tire-install" && rim() ? `${s.name} (${t.fmt.rims[rim()!]}${runFlat() ? `, ${b.tire.runFlat.replace(/\s*\(.*\)$/, "")}` : ""})` : s.name;
-    sum.service.textContent = list.length ? list.map(label).join(" + ") : "—";
+    const extras = extraCars();
+    sum.service.textContent = !list.length
+      ? "—"
+      : extras.length
+        ? [`${b.cars.car(1)}: ${picked().map((slug) => label(serviceIn(cfg.lang, slug)!)).join(" + ") || "—"}`, ...extras.map((c) => `${b.cars.car(c.n)}: ${c.services.map((slug) => serviceIn(cfg.lang, slug)!.name).join(" + ") || "—"}`)].join(" · ")
+        : list.map(label).join(" + ");
     sum.price.textContent = list.length ? totals(list) : "";
     totalLine.textContent = list.length ? totals(list) : "";
     sum.where.textContent = value("address") || whereDefault;
@@ -484,7 +522,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   }
 
   async function loadSlots(force = false) {
-    const svc = picked().join(",");
+    const svc = allSlugs().join(",");
     if (!svc || (slotsFor === svc && !force)) return;
     slotsFor = svc;
     status.textContent = b.when.loading;
@@ -626,16 +664,18 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
 
   // --- Confirm ---------------------------------------------------------------
   function fillReview() {
-    const list = picked().map((slug) => serviceIn(cfg.lang, slug)!);
+    const list = allSlugs().map((slug) => serviceIn(cfg.lang, slug)!);
+    const carOf = lines().map((l) => l.car);
+    const multi = extraCars().length > 0;
     const car = [value("year"), value("make"), value("model")].filter(Boolean).join(" ");
     // The receipt: appointment first, then the services, car and contact.
     const mins = list.reduce((n, s) => n + s.minutes, 0) + travel;
     const at = value("startAt");
     const day = at ? new Intl.DateTimeFormat(t.locale, { timeZone: TZ, weekday: "long", month: "long", day: "numeric" }).format(new Date(at)) : "";
     $("[data-co-items]").replaceChildren(
-      ...list.map((s) => {
+      ...list.map((s, i) => {
         const li = document.createElement("li");
-        const name = Object.assign(document.createElement("span"), { textContent: s.name + (s.slug === "tire-install" && rim() ? ` · ${t.fmt.rims[rim()!]}${runFlat() ? ` · ${b.tire.runFlatShort}` : ""}` : "") });
+        const name = Object.assign(document.createElement("span"), { textContent: (multi ? `${b.cars.car(carOf[i])} · ` : "") + s.name + (s.slug === "tire-install" && rim() ? ` · ${t.fmt.rims[rim()!]}${runFlat() ? ` · ${b.tire.runFlatShort}` : ""}` : "") });
         const cost = Object.assign(document.createElement("span"), {
           className: "num",
           textContent: s.slug === "tire-install" && rim() ? money(cfg.lang, priceOf(s)) : priceText(cfg.lang, s),
@@ -648,7 +688,10 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       list.length ? b.confirm.duration(duration(cfg.lang, mins)) : "",
       `${[value("address"), value("postal").toUpperCase()].filter(Boolean).join(", ")} · ${value("parking")}`,
       at ? `${day.charAt(0).toUpperCase()}${day.slice(1)} · ${clock(at)}` : "",
-      car + (value("vin") ? ` · ${value("vin").toUpperCase()}` : ""),
+      [
+        car + (value("vin") ? ` · ${value("vin").toUpperCase()}` : ""),
+        ...extraCars().map((c) => `${b.cars.car(c.n)}: ${[c.year, c.make, c.model].filter(Boolean).join(" ")}${c.vin ? ` · ${c.vin}` : ""}`),
+      ].join(" / "),
       [value("name"), value("phone"), value("email")].filter(Boolean).join(" · "),
     ];
     rows.forEach((v, i) => ($(`[data-review-v="${i}"]`).textContent = v));
@@ -660,7 +703,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       $("[data-pay-amount]").textContent = due;
       $("[data-pay-deposit]").textContent = due;
       $("[data-co-due-mini]").textContent = b.confirm.dueMini(due);
-      const pre = estimateOf(picked(), rim(), runFlat());
+      const pre = estimateOf(allSlugs(), rim(), runFlat());
       const tx = taxesOn(pre);
       $("[data-pay-estimate]").textContent = money(cfg.lang, pre, true);
       // Tax rows exist only under the archived percent rule.
@@ -681,7 +724,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const formId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}${Math.random().toString(16).slice(2)}`;
   let attempt: { sig: string; id: string; token?: string } | null = null;
   const attemptFor = () => {
-    const sig = JSON.stringify([picked(), value("startAt"), value("rim"), runFlat(), value("email").toLowerCase()]);
+    const sig = JSON.stringify([allSlugs(), extraCars(), value("startAt"), value("rim"), runFlat(), value("email").toLowerCase()]);
     if (!attempt || attempt.sig !== sig) {
       let h = 0;
       for (const c of sig) h = (h * 31 + c.charCodeAt(0)) | 0;
@@ -916,7 +959,9 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       for (let i = 0; uploading > 0 && i < 40; i++) await new Promise((r) => setTimeout(r, 500));
       const body: Record<string, unknown> = {};
       new FormData(form).forEach((v, k) => typeof v === "string" && k !== "service" && k !== "remember" && (body[k] = v));
-      body.services = picked();
+      body.services = allSlugs();
+      if (extraCars().length) body.cars = JSON.stringify(extraCars().map(({ n, ...c }) => ({ car: n, ...c })));
+      for (const k of Object.keys(body)) if (/^car\d/.test(k)) delete body[k];
       body.notifyEmail = !!form.querySelector<HTMLInputElement>('[name="notifyEmail"]')?.checked;
       body.notifyText = !!form.querySelector<HTMLInputElement>('[name="notifyText"]')?.checked;
       const a = attemptFor();
@@ -949,7 +994,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
         } catch {}
         // For "Add to calendar" on the next page (this tab only).
         try {
-          const list = picked().map((slug) => serviceIn(cfg.lang, slug)!);
+          const list = allSlugs().map((slug) => serviceIn(cfg.lang, slug)!);
           const visit: LastVisit = {
             ref: String(data.ref),
             startAt: value("startAt"),
