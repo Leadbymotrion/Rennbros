@@ -86,7 +86,7 @@ const created = (reqs: Req[]) => reqs.find((r) => r.method === "POST" && r.path 
   check("1 booking made", r.id === "bk_1");
   check("1 profile: first and last name", made.given_name === "Jane" && made.family_name === "Roy");
   check("1 profile: email in the email field", made.email_address === "jane@example.com");
-  check("1 profile: no phone (customer chose email only)", !("phone_number" in made));
+  check("1 profile: phone always on (Square requires it), as +15145550101", made.phone_number === "+15145550101");
   check("1 profile: address in the address field", made.address?.locality === "Beaconsfield" && made.address?.postal_code === "H9W 4H1");
   const upd = find(reqs, "PUT", "/v2/bookings/bk_1")!.body.booking;
   check("1 booking: details in the seller note", upd.seller_note.includes("Vehicle: 2019 Honda Civic"));
@@ -99,7 +99,7 @@ const created = (reqs: Req[]) => reqs.find((r) => r.method === "POST" && r.path 
   check("1 field: Vehicle = 2019 Honda Civic", val("rennbros-vehicle") === "2019 Honda Civic");
   check("1 field: VIN", val("rennbros-vin") === "1HGBH41JXMN109186");
   check("1 field: Updates by = email only · French", val("rennbros-updates") === "Email only (no texts) · French");
-  check("1 field: phone kept in Other contact", val("rennbros-other-contact") === "Phone: (514) 555-0101");
+  check("1 field: no Other contact (email is on the profile)", val("rennbros-other-contact") === undefined);
 }
 
 // 2 · Text only: phone stored in Square's format, email goes to Other contact.
@@ -109,6 +109,8 @@ const created = (reqs: Req[]) => reqs.find((r) => r.method === "POST" && r.path 
   const made = created(reqs)!.body;
   check("2 profile: phone as +15145550199", made.phone_number === "+15145550199");
   check("2 profile: no email (customer chose text only)", !("email_address" in made));
+  const vals2 = Object.values(find(reqs, "POST", "/v2/customers/custom-attributes/bulk-upsert")!.body.values).map((v: any) => [v.custom_attribute.key, v.custom_attribute.value]);
+  check("2 field: email kept in Other contact", vals2.find(([k]) => k === "rennbros-other-contact")?.[1] === "Email: marc@example.com");
 }
 
 // 3 · Returning customer: only empty fields are filled, nothing overwritten.

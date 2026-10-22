@@ -275,9 +275,10 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
   /**
    * The customer's profile in Square, filled in field by field so the shop
    * never has to copy anything out of a note: name, email, phone and address in
-   * their own fields. Square sends booking updates to the email and phone on
-   * the profile, so only the channel(s) the customer chose go there; the other
-   * one is kept in the "Other contact" custom field (see saveProfileFields).
+   * their own fields. The phone always goes on the profile: Square's Bookings
+   * API requires one on the customer. The email goes on only if the customer
+   * chose email updates (Square emails whatever address is on the profile);
+   * otherwise it's kept in the "Other contact" custom field.
    * A returning customer (same email, or same phone) gets only their EMPTY
    * fields filled: anything the shop corrected by hand stays as it is.
    */
@@ -288,7 +289,7 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
       given_name: c.givenName,
       family_name: c.familyName,
       ...(notify.email ? { email_address: c.email } : {}),
-      ...(notify.text && phone ? { phone_number: phone } : {}),
+      ...(phone ? { phone_number: phone } : {}),
       ...(place ? { address: place } : {}),
     };
     const search = (filter: object) =>
@@ -373,7 +374,7 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
       "rennbros-vehicle": v ? [v.year, v.make, v.model].filter(Boolean).join(" ") : undefined,
       "rennbros-vin": v?.vin || undefined,
       "rennbros-updates": `${notify.email && notify.text ? "Email and text" : notify.email ? "Email only (no texts)" : "Text only (no emails)"}${input.lang === "fr" ? " · French" : ""}`,
-      "rennbros-other-contact": !notify.text ? `Phone: ${input.customer.phone}` : !notify.email ? `Email: ${input.customer.email}` : undefined,
+      "rennbros-other-contact": !notify.email ? `Email: ${input.customer.email}` : undefined,
     };
     const keys = await ensureFields();
     const entries = (Object.entries(values) as [FieldKey, string | undefined][]).filter(([k, val]) => val && keys[k]);
