@@ -133,6 +133,8 @@ export async function POST(request: Request) {
         address: s("address"),
         place: toSquareAddress(s("address"), s("postal")),
         note: amountCents > 0 ? `${note}\nEstimate before tax: $${estimate.toFixed(2)} · with GST and QST: $${estimateWithTax(slugs, rim, runFlat).toFixed(2)} · deposit ${pct}% of that` : note,
+        customerNote: s("notes") || undefined,
+        vehicle: { year: s("year") || undefined, make: s("make"), model: s("model"), vin: s("vin") || undefined },
         lang,
       },
       amountCents > 0
