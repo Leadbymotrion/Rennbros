@@ -9,6 +9,7 @@ import { Chrome } from "@/components/site/Chrome";
 import { AutoUpdate } from "@/components/site/AutoUpdate";
 import { StructuredData } from "@/components/site/StructuredData";
 import { clash, general } from "../fonts";
+import { PREVIEW } from "@/lib/preview";
 import "../globals.css";
 import "../site.css";
 import "../sections.css";
@@ -61,6 +62,11 @@ export const viewport: Viewport = {
 const boot = `document.documentElement.classList.add("js");try{if(localStorage.getItem("rennbros.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}
 addEventListener("load",function(){try{if(getComputedStyle(document.documentElement).getPropertyValue("--color-paper").trim())return;var k="rennbros.cssReload",t=+sessionStorage.getItem(k)||0;if(Date.now()-t<6e4)return;sessionStorage.setItem(k,String(Date.now()));location.reload()}catch(e){}});`;
 
+/* Test copy only (lib/preview.ts): a phone or browser set to French opens the
+   French site on the first visit. The language link remembers the visitor's
+   own choice, which always wins after that. */
+const frenchFirst = `try{var k="rennbros.lang";document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[hreflang]");if(a)localStorage.setItem(k,a.getAttribute("hreflang"))},true);var l=(navigator.languages&&navigator.languages[0])||navigator.language||"";if(!localStorage.getItem(k)&&document.documentElement.lang.indexOf("en")===0&&/^fr(-|_|$)/i.test(l)){localStorage.setItem(k,"fr");var p=location.pathname;location.replace("/fr"+(p==="/"?"":p)+location.search+location.hash)}}catch(e){}`;
+
 export default async function Layout({ children, params }: { children: React.ReactNode; params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   if (!isLang(lang)) notFound();
@@ -68,7 +74,7 @@ export default async function Layout({ children, params }: { children: React.Rea
   return (
     <html lang={t.locale} className={`${clash.variable} ${general.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: boot }} />
+        <script dangerouslySetInnerHTML={{ __html: PREVIEW ? boot + frenchFirst : boot }} />
         <StructuredData lang={lang} />
       </head>
       <body>
