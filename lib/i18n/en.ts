@@ -228,6 +228,11 @@ export const en = {
       title: "What people say.",
     },
     faq: { label: "FAQ", title: "Before you book.", more: "All questions" },
+    fleet: {
+      label: "Fleet and corporate",
+      lines: ["Fleet and corporate rates", "Company cars serviced where they park", "Oil, brakes, tires and batteries on site", "Ask for a fleet quote"],
+      call: "Call now",
+    },
     marquee: {
       label: "Trusted by owners of",
       // Brand names as plain text, never logos. Confirm with the client before launch (see launch guard).

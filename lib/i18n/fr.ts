@@ -231,6 +231,11 @@ export const fr: Dict = {
       title: "Ce qu’on en dit.",
     },
     faq: { label: "FAQ", title: "Avant de réserver.", more: "Toutes les questions" },
+    fleet: {
+      label: "Flottes et entreprises",
+      lines: ["Tarifs pour flottes et entreprises", "Véhicules d’entreprise entretenus là où ils sont stationnés", "Huile, freins, pneus et batteries sur place", "Demandez une soumission flotte"],
+      call: "Appelez",
+    },
     marquee: {
       label: "La confiance des propriétaires de",
       // Brand names as plain text, never logos. Confirm with the client before launch (see launch guard).

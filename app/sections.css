@@ -372,3 +372,36 @@ html.js .smap__check { display: grid; }
 /* Reduced motion: a plain row you scroll yourself. */
 .rv__viewport.is-still { overflow-x: auto; scroll-snap-type: x mandatory; cursor: auto; scrollbar-width: none; }
 .rv__viewport.is-still .rv__card { scroll-snap-align: start; }
+
+/* Fleet and corporate band (test copy only). Yellow accents by day, red at night. */
+.fleet { --fleet-accent: #f2c230; --fleet-on: #1f2227; background: var(--color-ink); color: var(--color-paper); }
+:root[data-theme="dark"] .fleet { --fleet-accent: #e0262d; --fleet-on: #fff; background: var(--color-mist); color: var(--color-ink); }
+:root[data-theme="dark"] .fleet__tag { color: #ff6b6f; }
+.fleet__inner { position: relative; display: flex; align-items: center; gap: 1rem; min-height: 3.75rem; padding-block: 0.6rem; }
+.fleet--photo .fleet__inner { min-height: 4.5rem; }
+.fleet__photo { flex: none; width: 6.5rem; align-self: stretch; margin-block: -0.6rem; background: center / cover no-repeat; border-radius: 0; }
+.fleet__tag { flex: none; margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fleet-accent); }
+.fleet__window {
+  flex: 1; min-width: 0; overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+}
+.fleet__track { list-style: none; margin: 0; padding: 0; display: flex; width: max-content; animation: fleet-drift 36s linear infinite; }
+.fleet__track li { white-space: nowrap; font-size: 0.9375rem; font-weight: 500; }
+.fleet__track li::after { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 1.1rem 0.15em; border-radius: 50%; background: var(--fleet-accent); vertical-align: middle; }
+.fleet__window:hover .fleet__track { animation-play-state: paused; }
+/* Left to right: start one copy to the left, slide to rest. */
+@keyframes fleet-drift { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+.fleet__call {
+  flex: none; display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.55rem 1rem; border-radius: 999px;
+  background: var(--fleet-accent); color: var(--fleet-on); font-weight: 600; font-size: 0.9375rem; text-decoration: none;
+  transition: transform 160ms var(--ease-soft), filter 160ms var(--ease-soft);
+}
+.fleet__call:hover { filter: brightness(1.06); }
+.fleet__call:active { transform: translateY(1px); }
+.fleet__call:focus-visible { outline: 2px solid var(--fleet-accent); outline-offset: 3px; }
+@media (max-width: 40em) {
+  .fleet__tag, .fleet__photo { display: none; }
+  .fleet__call span { font-size: 0.875rem; }
+}
+@media (prefers-reduced-motion: reduce) { .fleet__track { animation: none; } }
