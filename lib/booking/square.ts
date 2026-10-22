@@ -77,7 +77,13 @@ export type BookInput = {
   address: string;
   /** Structured, for Square (null when we couldn't be sure of city or postal code). */
   place: SquareAddress | null;
+  /** Everything the shop needs about the visit. Ends up in the booking's
+   *  seller note (staff only); it is also the fallback customer note. */
   note: string;
+  /** What the customer wrote themselves: the booking's customer note. */
+  customerNote?: string;
+  /** Saved on the customer's profile in Square (custom fields). */
+  vehicle?: { year?: string; make: string; model: string; vin?: string };
   lang: "en" | "fr";
   /** Same key on a retry = the same booking back from Square. */
   idempotencyKey?: string;
@@ -174,6 +180,14 @@ export function parseServiceMap(raw: string | undefined): Record<string, string>
   }
 }
 
+/** "(514) 891-7366" -> "+15148917366", the form Square stores; undefined if it isn't a North American number. */
+export function e164(raw: string): string | undefined {
+  const d = raw.replace(/\D/g, "");
+  if (d.length === 10) return `+1${d}`;
+  if (d.length === 11 && d.startsWith("1")) return `+${d}`;
+  return undefined;
+}
+
 const uuid = () =>
   (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`);
 
@@ -256,25 +270,122 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
     return versions.get(id)!;
   };
 
-  const customerFor = async (c: BookInput["customer"]) => {
-    const found = await call<{ customers?: { id: string }[] }>("/v2/customers/search", {
-      body: { query: { filter: { email_address: { exact: c.email } } }, limit: 1 },
-    });
-    if (found.customers?.[0]) return found.customers[0].id;
-    // Square sends booking updates to the email and phone on the profile:
-    // keep off the one the customer didn't choose (both stay in the note).
+  type SquareCustomer = { id: string; given_name?: string; family_name?: string; email_address?: string; phone_number?: string; address?: { address_line_1?: string } };
+
+  /**
+   * The customer's profile in Square, filled in field by field so the shop
+   * never has to copy anything out of a note: name, email, phone and address in
+   * their own fields. The phone always goes on the profile: Square's Bookings
+   * API requires one on the customer. The email goes on only if the customer
+   * chose email updates (Square emails whatever address is on the profile);
+   * otherwise it's kept in the "Other contact" custom field.
+   * A returning customer (same email, or same phone) gets only their EMPTY
+   * fields filled: anything the shop corrected by hand stays as it is.
+   */
+  const customerFor = async (c: BookInput["customer"], place: SquareAddress | null) => {
     const notify = c.notify ?? { email: true, text: true };
-    const made = await call<{ customer: { id: string } }>("/v2/customers", {
+    const phone = e164(c.phone);
+    const wanted: Record<string, unknown> = {
+      given_name: c.givenName,
+      family_name: c.familyName,
+      ...(notify.email ? { email_address: c.email } : {}),
+      ...(phone ? { phone_number: phone } : {}),
+      ...(place ? { address: place } : {}),
+    };
+    const search = (filter: object) =>
+      call<{ customers?: SquareCustomer[] }>("/v2/customers/search", { body: { query: { filter }, limit: 1 } }).then((r) => r.customers?.[0]);
+    const found = (await search({ email_address: { exact: c.email } })) ?? (phone ? await search({ phone_number: { exact: phone } }).catch(() => undefined) : undefined);
+
+    if (found) {
+      const missing = Object.fromEntries(
+        Object.entries(wanted).filter(([k, v]) => v && (k === "address" ? !found.address?.address_line_1 : !found[k as keyof SquareCustomer])),
+      );
+      if (Object.keys(missing).length) {
+        await call(`/v2/customers/${found.id}`, { method: "PUT", body: missing }).catch((e) =>
+          console.warn("[book] couldn't fill in the customer's profile", e instanceof SquareError ? JSON.stringify(e.detail) : e),
+        );
+      }
+      return found.id;
+    }
+
+    const create = (body: Record<string, unknown>) =>
+      call<{ customer: { id: string } }>("/v2/customers", { body: { idempotency_key: uuid(), ...body, note: "Booked online at rennbros.com" } });
+    try {
+      return (await create(wanted)).customer.id;
+    } catch (e) {
+      // A phone or address Square won't take must never stop a booking:
+      // make the profile without them (they're in the booking's note).
+      if (!(e instanceof SquareError && e.status === 400)) throw e;
+      console.warn("[book] Square refused part of the customer profile; creating it with name and email only", JSON.stringify(e.detail));
+      const { phone_number: _p, address: _a, ...rest } = wanted;
+      return (await create(rest)).customer.id;
+    }
+  };
+
+  /* Custom fields on the customer's profile, shown in Square's Customer
+   * directory: the car, the VIN, how they want updates, and the contact they
+   * didn't pick for updates. If the shop already has a field with the same name
+   * (made in the Square dashboard), that one is used instead of a new one. */
+  const FIELDS = [
+    { key: "rennbros-vehicle", name: "Vehicle" },
+    { key: "rennbros-vin", name: "VIN" },
+    { key: "rennbros-updates", name: "Updates by" },
+    { key: "rennbros-other-contact", name: "Other contact (no updates)" },
+  ] as const;
+  type FieldKey = (typeof FIELDS)[number]["key"];
+  let fieldKeys: Promise<Partial<Record<FieldKey, string>>> | null = null;
+  const STRING_SCHEMA = { $ref: "https://developer-production-s.squarecdn.com/schemas/v1/common.json#squareup.common.String" };
+  const ensureFields = () =>
+    (fieldKeys ??= (async () => {
+      const r = await call<{ custom_attribute_definitions?: { key: string; name?: string; visibility?: string }[] }>(
+        "/v2/customers/custom-attribute-definitions?limit=100",
+      );
+      const defs = r.custom_attribute_definitions ?? [];
+      const out: Partial<Record<FieldKey, string>> = {};
+      for (const f of FIELDS) {
+        const mine = defs.find((d) => d.key === f.key);
+        const same = defs.find((d) => d.name?.trim().toLowerCase() === f.name.toLowerCase() && d.visibility === "VISIBILITY_READ_WRITE_VALUES");
+        if (mine || same) {
+          out[f.key] = (mine ?? same)!.key;
+          continue;
+        }
+        try {
+          await call("/v2/customers/custom-attribute-definitions", {
+            body: {
+              idempotency_key: uuid(),
+              custom_attribute_definition: { key: f.key, name: f.name, description: "Filled in by rennbros.com bookings", visibility: "VISIBILITY_READ_WRITE_VALUES", schema: STRING_SCHEMA },
+            },
+          });
+          out[f.key] = f.key;
+        } catch (e) {
+          console.warn(`[book] couldn't create the "${f.name}" customer field`, e instanceof SquareError ? JSON.stringify(e.detail) : e);
+        }
+      }
+      return out;
+    })().catch((e) => {
+      fieldKeys = null; // try again on the next booking
+      throw e;
+    }));
+
+  const saveProfileFields = async (customerId: string, input: BookInput) => {
+    const notify = input.customer.notify ?? { email: true, text: true };
+    const v = input.vehicle;
+    const values: Partial<Record<FieldKey, string>> = {
+      "rennbros-vehicle": v ? [v.year, v.make, v.model].filter(Boolean).join(" ") : undefined,
+      "rennbros-vin": v?.vin || undefined,
+      "rennbros-updates": `${notify.email && notify.text ? "Email and text" : notify.email ? "Email only (no texts)" : "Text only (no emails)"}${input.lang === "fr" ? " · French" : ""}`,
+      "rennbros-other-contact": !notify.email ? `Email: ${input.customer.email}` : undefined,
+    };
+    const keys = await ensureFields();
+    const entries = (Object.entries(values) as [FieldKey, string | undefined][]).filter(([k, val]) => val && keys[k]);
+    if (!entries.length) return;
+    await call("/v2/customers/custom-attributes/bulk-upsert", {
       body: {
-        idempotency_key: uuid(),
-        given_name: c.givenName,
-        family_name: c.familyName,
-        ...(notify.email ? { email_address: c.email } : {}),
-        ...(notify.text ? { phone_number: c.phone } : {}),
-        note: `Phone: ${c.phone} · Email: ${c.email} · Updates by ${notify.email && notify.text ? "email and text" : notify.email ? "email only" : "text only"}`,
+        values: Object.fromEntries(
+          entries.map(([k, val], i) => [`v${i}`, { customer_id: customerId, custom_attribute: { key: keys[k], value: val!.slice(0, 2000) }, idempotency_key: uuid() }]),
+        ),
       },
     });
-    return made.customer.id;
   };
 
   return {
@@ -354,7 +465,7 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
     },
 
     async book(input) {
-      const customerId = await customerFor(input.customer);
+      const customerId = await customerFor(input.customer, input.place);
       const given = input.slot.segments?.length === input.slugs.length ? input.slot.segments : null;
       const segments = await Promise.all(
         input.slugs.map(async (slug, i) => {
@@ -379,7 +490,7 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
       const token = await env.bookingToken?.().catch(() => undefined);
       if (env.bookingToken && !token) console.warn("[book] no customer-level Square token; booking as the owner (accepted at once)");
       const create = (where: object, retry = false) =>
-        call<{ booking: { id: string; status: string } }>("/v2/bookings", {
+        call<{ booking: { id: string; status: string; version?: number } }>("/v2/bookings", {
           token,
           body: {
             idempotency_key: `${key}${retry ? "-n" : ""}${withBuffer ? "" : "-p"}`,
@@ -406,7 +517,7 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
           return create({}, true);
         }
       };
-      let r: { booking: { id: string; status: string } };
+      let r: { booking: { id: string; status: string; version?: number } };
       try {
         r = await attempt();
       } catch (e) {
@@ -417,7 +528,30 @@ export function square(env: SquareEnv, timing: Timing, schedule: Schedule): Book
         r = await attempt();
       }
       const status = r.booking.status === "ACCEPTED" ? "ACCEPTED" : "PENDING";
-      return { id: r.booking.id, status, customerId };
+
+      // Sort the details into Square's own places. The booking is made at this
+      // point, so none of this may fail it: on any error the full note stays
+      // in the customer note, as before.
+      //  - seller note (staff only): services, car, parking, deposit, terms, photos
+      //  - customer note: only what the customer wrote
+      //  - customer profile: car, VIN, update preference, other contact
+      // The owner's own access is used: the seller note is the shop's field.
+      const booking = r.booking;
+      await Promise.all([
+        call(`/v2/bookings/${booking.id}`, {
+          method: "PUT",
+          body: {
+            idempotency_key: `${key}-notes`,
+            booking: {
+              ...(booking.version !== undefined ? { version: booking.version } : {}),
+              seller_note: input.note.slice(0, 4096),
+              customer_note: (input.customerNote?.trim() || "Booked online at rennbros.com").slice(0, 4096),
+            },
+          },
+        }).catch((e) => console.warn("[book] couldn't move the details to the seller note; they stay in the customer note", e instanceof SquareError ? JSON.stringify(e.detail) : e)),
+        saveProfileFields(customerId, input).catch((e) => console.warn("[book] couldn't save the car and contact fields on the customer profile", e instanceof SquareError ? JSON.stringify(e.detail) : e)),
+      ]);
+      return { id: booking.id, status, customerId };
     },
 
     async hold(input) {

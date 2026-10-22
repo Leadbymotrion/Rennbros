@@ -4,3 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "22"
+
+# The Next.js adapter (Netlify adds it on Git builds; declared so uploaded builds,
+# like the rennbros-test copy, get it too).
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

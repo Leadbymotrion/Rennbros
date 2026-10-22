@@ -13,6 +13,8 @@ const BLOCKED = [
 ];
 
 export default function robots(): MetadataRoute.Robots {
+  // The test copy (rennbros-test): closed to every crawler.
+  if (process.env.NOINDEX === "1") return { rules: { userAgent: "*", disallow: "/" } };
   return {
     rules: [
       { userAgent: "*", allow: "/", disallow: ["/api/", "/book/received", "/review", "/fr/review"] },

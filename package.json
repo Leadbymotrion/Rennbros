@@ -17,7 +17,8 @@
     "map:snapshot": "node scripts/map-snapshot.mjs http://localhost:3000 /area",
     "test:deposit": "tsx scripts/deposit-scenarios.mts",
     "deploy": "bash scripts/deploy.sh",
-    "test:calendar": "tsx scripts/calendar-scenarios.mts"
+    "test:calendar": "tsx scripts/calendar-scenarios.mts",
+    "test:fields": "tsx scripts/booking-fields.mts"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.2",

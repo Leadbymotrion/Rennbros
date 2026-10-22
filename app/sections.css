@@ -93,7 +93,15 @@
 }
 .dish:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
 .dish.is-on { border-color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-ink); }
-.dish__media { display: block; aspect-ratio: 4 / 3; overflow: hidden; background: #eceef0; }
+.dish__media { display: block; position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #eceef0; }
+/* The dashboard warning light in the corner of a service photo (Services page). */
+.dish__media .dish__lamp { position: absolute; object-fit: contain; top: 12px; right: 12px; width: 46px; height: 46px; border-radius: 12px; box-shadow: 0 8px 18px -10px rgba(16,18,22,.55); transition: transform 320ms var(--ease-out); }
+.dish:hover .dish__media .dish__lamp { transform: translateY(-2px); }
+@media (min-width: 64em) { .dish__media .dish__lamp { width: 52px; height: 52px; top: 14px; right: 14px; } }
+/* A light tile on the light site, the dark dashboard tile in dark mode. */
+.dish__media .dish__lamp--light { box-shadow: 0 8px 18px -10px rgba(16,18,22,.32); }
+.dish__media .dish__lamp--dark, :root[data-theme="dark"] .dish__media .dish__lamp--light { display: none; }
+:root[data-theme="dark"] .dish__media .dish__lamp--dark { display: block; }
 .dish__media img { width: 100%; height: 100%; object-fit: cover; transition: transform 700ms var(--ease-out); }
 .dish:hover .dish__media:not(.dish__media--ba) img { transform: scale(1.04); }
 
