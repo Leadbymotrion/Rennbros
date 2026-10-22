@@ -5,7 +5,8 @@
  * Run: npm run test:deposit (npx tsx scripts/deposit-scenarios.mts)
  */
 import { checkout, DepositDeclined } from "../lib/booking/checkout";
-import { depositCents, estimateOf } from "../lib/booking/deposit";
+import { depositCents, depositFor, depositOn, estimateOf } from "../lib/booking/deposit";
+import { business } from "../lib/business";
 import type { BookInput, BookResult, HoldInput, Payment } from "../lib/booking/square";
 
 type Fail = Partial<Record<"hold" | "book" | "capture" | "release", boolean>>;
@@ -79,7 +80,7 @@ const table: [string[], string | undefined, boolean, number][] = [
   [["battery"], undefined, false, 2874],
   [["diagnostics"], undefined, false, 2874],
   [["tires"], undefined, false, 1840],
-  [["tpms"], undefined, false, 920],
+  [["tpms"], undefined, false, 2874],
   [["ppi"], undefined, false, 4139],
   [["ac-diagnostic"], undefined, false, 3449],
   [["tire-install"], "15-16", false, 2300],
@@ -93,6 +94,14 @@ for (const [slugs, rim, rf, want] of table) {
   ok(got === want, `deposit ${slugs.join("+")}${rim ? ` ${rim}"` : ""}${rf ? " run-flat" : ""} = $${(want / 100).toFixed(2)}`, `got $${(got / 100).toFixed(2)} of $${estimateOf(slugs, rim as never, rf)}`);
 }
 ok(depositCents(["oil-change"], null) === 0 && depositCents(["oil-change"], 0) === 0, "no deposit when the percent is off");
+
+// --- Current rule: flat $50, no tax, for any service or combination ---------
+ok(business.booking.depositMode === "flat" && depositOn(), "deposit rule is flat");
+for (const [slugs, rim, rf] of [[["oil-change"]], [["tpms"]], [["tire-install"], "21+", true], [["oil-change", "brakes", "battery"]]] as [string[], string?, boolean?][]) {
+  const got = depositFor(slugs, rim as never, rf);
+  ok(got === 5000, `flat deposit ${slugs.join("+")} = $50.00`, `got $${(got / 100).toFixed(2)}`);
+}
+ok(depositFor([]) === 0, "no services, no deposit");
 
 // --- 1. Happy path ------------------------------------------------------------
 {

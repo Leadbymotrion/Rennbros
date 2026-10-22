@@ -18,6 +18,10 @@ const WEIGHTS = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2];
 export const cleanVin = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, "");
 
 /** 17 characters, no I/O/Q, and the check digit adds up. */
+/** 17 VIN characters (no I, O or Q). The form's required check: the check
+ *  digit is left to isValidVin, so a rare non-North-American VIN isn't blocked. */
+export const vinFormatOk = (v: string) => /^[A-HJ-NPR-Z0-9]{17}$/.test(cleanVin(v));
+
 export function isValidVin(v: string): boolean {
   const s = cleanVin(v);
   if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(s)) return false;

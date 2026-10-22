@@ -1,9 +1,10 @@
 import { provider, earliest, timing, schedule, pickServices } from "@/lib/booking/config";
 import { toSquareAddress } from "@/lib/booking/address";
-import { depositCents, estimateOf, estimateWithTax } from "@/lib/booking/deposit";
+import { depositFor, estimateOf, estimateWithTax } from "@/lib/booking/deposit";
 import { checkout, DepositDeclined } from "@/lib/booking/checkout";
 import { MAX_PHOTOS, PHOTO_ID } from "@/lib/booking/photos";
-import { isRim } from "@/lib/services";
+import { isRim, needsVin } from "@/lib/services";
+import { vinFormatOk } from "@/lib/book/vin";
 import { overLimit } from "@/lib/ratelimit";
 import { business } from "@/lib/business";
 import { dict, href, type Lang } from "@/lib/i18n";
@@ -56,6 +57,8 @@ export async function POST(request: Request) {
   const missing = ["address", "postal", "parking", "name", "phone", "email", "make", "model"].filter((k) => !s(k));
   if (!slugs || missing.length) return fail(request, lang, "missing_fields", 400, isJSON, { missing });
   if (!/^\S+@\S+\.\S+$/.test(s("email"))) return fail(request, lang, "email", 400, isJSON);
+  // Oil changes and brakes: parts are matched to the exact car, so the VIN is required.
+  if (needsVin(slugs) && !vinFormatOk(s("vin"))) return fail(request, lang, "vin", 400, isJSON);
   // Office or business lot: only with the customer's consent to the disclosure
   // (they have, or will get, the property's permission).
   const office = (["en", "fr"] as const).some((l) => dict(l).book.where.parkingOptions.at(-1) === s("parking"));
@@ -104,7 +107,7 @@ export async function POST(request: Request) {
     `Parking: ${s("parking")}`,
     office && `Office/business lot: customer confirmed they have, or will get, the property's permission (consent and disclosure ${s("parkingConsent").slice(9) || "accepted"}).`,
     `Contact: ${s("phone")} · ${s("email")}`,
-    `Accepted booking terms v1.0 and warranty (${lang === "fr" ? "French" : "English"} version) at ${new Date().toISOString()}`,
+    `Accepted booking terms v1.2 and warranty (${lang === "fr" ? "French" : "English"} version) at ${new Date().toISOString()}`,
     `Updates by: ${notify.email && notify.text ? "email and text" : notify.email ? "email only (no texts)" : "text only (no emails)"}`,
     `Vehicle: ${[s("year"), s("make"), s("model")].filter(Boolean).join(" ")}`,
     s("vin") && `VIN: ${s("vin")}`,
@@ -114,9 +117,12 @@ export async function POST(request: Request) {
   ].filter(Boolean).join("\n");
 
   // The deposit: recomputed here from the services, never taken from the browser.
-  const pct = business.booking.depositPercent;
+  const flat = business.booking.depositMode === "flat";
   // Preview mode (no Square keys) books nothing real, so it takes no deposit.
-  const amountCents = p.live ? depositCents(slugs, pct, rim, runFlat) : 0;
+  const amountCents = p.live ? depositFor(slugs, rim, runFlat) : 0;
+  const depositLine = flat
+    ? `\nDeposit: flat $${(amountCents / 100).toFixed(2)}, no tax. Final bill: GST and QST on the full price, then subtract the deposit.`
+    : ` · deposit ${business.booking.depositPercent}% of that`;
   if (amountCents > 0 && !s("sourceId")) return fail(request, lang, "card_required", 400, isJSON);
   // One id per booking attempt; a resend of the same attempt can't charge or book twice.
   const attempt = /^[\w-]{8,64}$/.test(s("attempt")) ? s("attempt") : crypto.randomUUID();
@@ -132,7 +138,7 @@ export async function POST(request: Request) {
         customer: { givenName, familyName: rest.join(" ") || undefined, email: s("email"), phone: s("phone"), notify },
         address: s("address"),
         place: toSquareAddress(s("address"), s("postal")),
-        note: amountCents > 0 ? `${note}\nEstimate before tax: $${estimate.toFixed(2)} · with GST and QST: $${estimateWithTax(slugs, rim, runFlat).toFixed(2)} · deposit ${pct}% of that` : note,
+        note: amountCents > 0 ? `${note}\nEstimate before tax: $${estimate.toFixed(2)} · with GST and QST: $${estimateWithTax(slugs, rim, runFlat).toFixed(2)}${depositLine}` : note,
         customerNote: s("notes") || undefined,
         vehicle: { year: s("year") || undefined, make: s("make"), model: s("model"), vin: s("vin") || undefined },
         lang,
@@ -143,7 +149,7 @@ export async function POST(request: Request) {
             sourceId: s("sourceId"),
             verificationToken: s("verificationToken") || undefined,
             buyerEmail: s("email"),
-            note: `Deposit ${pct}% · ${slugs.join(", ")} · ${s("name")} · ${slot.startAt.slice(0, 10)}`,
+            note: `Deposit ${flat ? "flat" : `${business.booking.depositPercent}%`} · ${slugs.join(", ")} · ${s("name")} · ${slot.startAt.slice(0, 10)}`,
           }
         : null,
     );

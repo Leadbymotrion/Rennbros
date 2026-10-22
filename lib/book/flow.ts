@@ -9,8 +9,9 @@ import { TIRE_CHOICES, isRim, mountPrice } from "@/lib/services";
 import { center, covered } from "@/lib/area";
 import { geocodePhoton, ADDRESS_KEY } from "@/lib/map/mount";
 import { VISIT_KEY, type LastVisit } from "@/lib/book/calendar";
-import { depositCents, estimateOf, taxesOn } from "@/lib/booking/deposit";
-import { cleanVin, decodeVin, isValidVin, readVin } from "@/lib/book/vin";
+import { depositFor, depositOn, estimateOf, taxesOn } from "@/lib/booking/deposit";
+import { cleanVin, decodeVin, isValidVin, readVin, vinFormatOk } from "@/lib/book/vin";
+import { needsVin } from "@/lib/services";
 import { MAX_PHOTOS } from "@/lib/booking/photos";
 
 type Slot = { startAt: string; minutes: number; segments?: unknown[] };
@@ -106,6 +107,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       ["name", (v) => v.length > 1],
       ["phone", (v) => v.replace(/\D/g, "").length >= 10],
       ["email", (v) => /^\S+@\S+\.\S+$/.test(v)],
+      ["vin", (v) => !needsVin(picked()) || vinFormatOk(v)],
       ["make", (v) => !!v],
       ["model", (v) => !!v],
     ],
@@ -167,6 +169,11 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const whereDefault = sum.where.textContent;
   const whenDefault = sum.when.textContent;
   const refreshSummary = () => {
+    // VIN: required for oil changes and brakes, optional otherwise.
+    const vinNeeded = needsVin(picked());
+    $$("[data-vin-opt]").forEach((el) => (el.hidden = vinNeeded));
+    $$("[data-vin-req]").forEach((el) => (el.hidden = !vinNeeded));
+    form.querySelector('[name="vin"]')?.toggleAttribute("required", vinNeeded);
     const list = picked().map((slug) => serviceIn(cfg.lang, slug)!);
     const label = (s: (typeof list)[number]) =>
       s.slug === "tire-install" && rim() ? `${s.name} (${t.fmt.rims[rim()!]}${runFlat() ? `, ${b.tire.runFlat.replace(/\s*\(.*\)$/, "")}` : ""})` : s.name;
@@ -563,10 +570,9 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     ];
     rows.forEach((v, i) => ($(`[data-review-v="${i}"]`).textContent = v));
     // The deposit, by the same rule the server charges with.
-    const pct = business.booking.depositPercent;
     try { paymentRequest?.update({ total: total() }); } catch {}
-    if (pct && form.querySelector("[data-pay-amount]")) {
-      const cents = depositCents(picked(), pct, rim(), runFlat());
+    if (depositOn() && form.querySelector("[data-pay-amount]")) {
+      const cents = depositFor(picked(), rim(), runFlat());
       const due = money(cfg.lang, cents / 100, true);
       $("[data-pay-amount]").textContent = due;
       $("[data-pay-deposit]").textContent = due;
@@ -574,9 +580,12 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       const pre = estimateOf(picked(), rim(), runFlat());
       const tx = taxesOn(pre);
       $("[data-pay-estimate]").textContent = money(cfg.lang, pre, true);
-      $("[data-pay-gst]").textContent = money(cfg.lang, tx.gst, true);
-      $("[data-pay-qst]").textContent = money(cfg.lang, tx.qst, true);
-      $("[data-pay-with-tax]").textContent = money(cfg.lang, tx.total, true);
+      // Tax rows exist only under the archived percent rule.
+      if (form.querySelector("[data-pay-gst]")) {
+        $("[data-pay-gst]").textContent = money(cfg.lang, tx.gst, true);
+        $("[data-pay-qst]").textContent = money(cfg.lang, tx.qst, true);
+        $("[data-pay-with-tax]").textContent = money(cfg.lang, tx.total, true);
+      }
       // The button says what happens: pay, then send.
       if (cfg.square.appId && cents > 0) submit.textContent = b.confirm.payAndSend(due);
     }
@@ -606,8 +615,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   type Tokenizer = { tokenize(): Promise<{ status: string; token?: string }> };
   let card: Tokenizer | null = null;
   let paymentRequest: { update(o: unknown): void } | null = null;
-  const pct = business.booking.depositPercent;
-  const depositNow = () => (pct ? depositCents(picked(), pct, rim(), runFlat()) : 0);
+  const depositNow = () => (depositOn() ? depositFor(picked(), rim(), runFlat()) : 0);
   const total = () => ({ amount: (depositNow() / 100).toFixed(2), label: b.confirm.card });
   /** The booking terms must be accepted before any payment (card or wallet). */
   const termsOk = () => {
@@ -630,7 +638,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       console.error("[wallet]", e);
     }
   };
-  if (pct && cfg.square.appId && cfg.square.locationId) {
+  if (depositOn() && cfg.square.appId && cfg.square.locationId) {
     const box = $("[data-card]");
     box.hidden = false;
     const s = document.createElement("script");
@@ -830,7 +838,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       body.notifyText = !!form.querySelector<HTMLInputElement>('[name="notifyText"]')?.checked;
       const a = attemptFor();
       body.attempt = a.id;
-      if (pct && cfg.square.appId && depositNow() > 0) {
+      if (cfg.square.appId && depositNow() > 0) {
         if (!card && !a.token) {
           alertText.textContent = b.confirm.cardMissing;
           alert.classList.add("on");

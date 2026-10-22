@@ -10,6 +10,10 @@ export type RimSize = "15-16" | "17-18" | "19-20" | "21+";
 /** A rim size, or "unknown": the customer doesn't know it (priced at the largest size). */
 export type Rim = RimSize | "unknown";
 
+/** Services that need the VIN to book (parts are matched to the exact car). */
+export const VIN_REQUIRED = ["oil-change", "brakes"];
+export const needsVin = (slugs: string[]) => slugs.some((s) => VIN_REQUIRED.includes(s));
+
 export type Pricing =
   /** "$125/h + parts" */
   | { kind: "hourly"; rate: number }
@@ -52,7 +56,7 @@ export const services: Service[] = [
   // The two tyre services follow Costco's split: are the other tyres already on their own rims?
   { slug: "tires", pricing: { kind: "range", min: 80, max: 100, per: "vehicle" }, priceFrom: 80, minutes: 60, image: "d-tires", photo: { name: "p06-swap", width: 1600, height: 1067 } },
   { slug: "tire-install", pricing: MOUNT, priceFrom: 100, minutes: 90, image: "d-install", photo: { name: "p04-balance", width: 1600, height: 1067 } },
-  { slug: "tpms", pricing: { kind: "range", min: 40, max: 80, plus: "sensors" }, priceFrom: 40, minutes: 90, image: "d-tpms", photo: { name: "p15-tpms", width: 1600, height: 1073 } },
+  { slug: "tpms", pricing: { kind: "call", amount: 125 }, priceFrom: 125, exact: true, minutes: 90, image: "d-tpms", photo: { name: "p15-tpms", width: 1600, height: 1073 } },
   { slug: "brakes", pricing: { kind: "hourly", rate: 125 }, priceFrom: 125, minutes: 120, image: "d-brakes", photo: { name: "p07-brakes", width: 1600, height: 1986 } },
   { slug: "battery", pricing: { kind: "hourly", rate: 125 }, priceFrom: 125, minutes: 60, image: "d-battery", photo: { name: "p08-battery", width: 1600, height: 1073 } },
   { slug: "diagnostics", pricing: { kind: "call", amount: 125 }, priceFrom: 125, exact: true, minutes: 60, image: "d-diag", photo: { name: "p09-diagnostic", width: 1517, height: 1011 } },

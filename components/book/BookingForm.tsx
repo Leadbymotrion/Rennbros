@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, CalendarBlank, Camera, ChatText, EnvelopeSimple,
 import { business } from "@/lib/business";
 import { dict, href, money, price, duration, servicesIn, type Lang } from "@/lib/i18n";
 import { MOUNT } from "@/lib/services";
+import { depositOn } from "@/lib/booking/deposit";
 import { mountFlow } from "@/lib/book/flow";
 import { Wordmark } from "@/components/site/Wordmark";
 
@@ -29,6 +30,9 @@ export function BookingForm({ lang }: { lang: Lang }) {
   const form = useRef<HTMLFormElement>(null);
   const started = useRef(false);
   const cancel = business.booking.cancellationHours;
+  // The deposit rule (lib/business.ts): flat $50 now, the 20% rule archived.
+  const deposit = depositOn();
+  const flatDeposit = business.booking.depositMode === "flat";
   const clock = (h: number) => new Intl.DateTimeFormat(t.locale, { timeZone: "UTC", hour: "numeric", minute: "2-digit" }).format(new Date(Date.UTC(2026, 0, 5, h)));
 
   useEffect(() => {
@@ -225,10 +229,11 @@ export function BookingForm({ lang }: { lang: Lang }) {
               <p className="err" data-err="email">{b.invalid.email}</p>
             </div>
             <label className="field">
-              <span>{b.you.vin} <em className="opt">({b.you.optional})</em></span>
+              <span>{b.you.vin} <em className="opt" data-vin-opt>({b.you.optional})</em><em className="opt" data-vin-req hidden>({b.you.vinRequired})</em></span>
               <input className="input" name="vin" maxLength={17} autoCapitalize="characters" spellCheck={false} />
               <span className="help">{b.you.vinHelp}</span>
             </label>
+            <p className="err" data-err="vin">{b.invalid.vin}</p>
             <div className="scan" data-vin-scan hidden>
               <label className="btn btn--ghost btn--sm scan__btn">
                 <Camera size={18} weight="light" aria-hidden />
@@ -305,13 +310,17 @@ export function BookingForm({ lang }: { lang: Lang }) {
                   </fieldset>
                   <dl className="co__totals">
                     <div><dt>{b.confirm.payEstimate}</dt><dd className="num" data-pay-estimate /></div>
-                    <div><dt>{b.confirm.payGst(pct(business.tax.gst))}</dt><dd className="num" data-pay-gst /></div>
-                    <div><dt>{b.confirm.payQst(pct(business.tax.qst))}</dt><dd className="num" data-pay-qst /></div>
-                    <div><dt>{b.confirm.payWithTax}</dt><dd className="num" data-pay-with-tax /></div>
-                    {business.booking.depositPercent ? (
+                    {flatDeposit ? null : (
+                      <>
+                        <div><dt>{b.confirm.payGst(pct(business.tax.gst))}</dt><dd className="num" data-pay-gst /></div>
+                        <div><dt>{b.confirm.payQst(pct(business.tax.qst))}</dt><dd className="num" data-pay-qst /></div>
+                        <div><dt>{b.confirm.payWithTax}</dt><dd className="num" data-pay-with-tax /></div>
+                      </>
+                    )}
+                    {deposit ? (
                       <>
                         <div className="co__due"><dt>{b.confirm.payTitle}</dt><dd className="num" data-pay-deposit /></div>
-                        <div className="co__later"><dt>{b.confirm.payLater}</dt><dd>{b.confirm.payLaterValue}</dd></div>
+                        <div className="co__later"><dt>{b.confirm.payLater}</dt><dd>{flatDeposit ? b.confirm.payLaterFlat : b.confirm.payLaterValue}</dd></div>
                       </>
                     ) : null}
                   </dl>
@@ -320,10 +329,10 @@ export function BookingForm({ lang }: { lang: Lang }) {
 
               <section className="co__pay" aria-labelledby="pay-title" data-deposit>
                 <header className="co__pay-head">
-                  <h3 className="co__pay-title" id="pay-title">{business.booking.depositPercent ? b.confirm.card : b.confirm.sendTitle}</h3>
-                  {business.booking.depositPercent ? <p className="co__pay-amount num" data-pay-amount aria-live="polite" /> : null}
+                  <h3 className="co__pay-title" id="pay-title">{deposit ? b.confirm.card : b.confirm.sendTitle}</h3>
+                  {deposit ? <p className="co__pay-amount num" data-pay-amount aria-live="polite" /> : null}
                 </header>
-                {business.booking.depositPercent ? <p className="co__pay-hint">{b.confirm.payHint(business.booking.depositPercent)}</p> : <p className="co__pay-hint">{b.confirm.depositUnset}</p>}
+                <p className="co__pay-hint">{!deposit ? b.confirm.depositUnset : flatDeposit ? b.confirm.payHintFlat : b.confirm.payHint(business.booking.depositPercent ?? 0)}</p>
                 <div className="card co__methods" data-card hidden>
                   <div className="wallets" data-wallets hidden>
                     <button type="button" id="apple-pay" className="wallet wallet--apple" aria-label="Apple Pay" hidden />

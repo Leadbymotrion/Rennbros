@@ -138,7 +138,7 @@ priced by rim size, run-flat +$20). The two are either/or everywhere.
    offer windows that leave time to finish.
 2. `GET /api/availability` asks Square for open windows; `POST /api/book`
    creates the booking in Square (rim size, notes, photo links and VIN in the
-   booking note) with a **20% deposit on the estimate with GST and QST**: the card is held, the booking is
+   booking note) with a **flat $50 deposit, no tax** (`business.booking.depositMode`; the old 20%-with-taxes rule is kept as `"percent"`): the card is held, the booking is
    created, then the hold is captured (`lib/booking/checkout.ts`). A failed
    booking releases the hold; retries reuse the same idempotency keys, so a
    customer is never charged twice. `npm run test:deposit` runs 25 scenarios.
