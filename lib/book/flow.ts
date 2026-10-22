@@ -7,7 +7,8 @@ import { dict, href, money, price as priceText, duration, serviceIn, type Lang }
 import { business } from "@/lib/business";
 import { TIRE_CHOICES, isRim, mountPrice } from "@/lib/services";
 import { center, covered } from "@/lib/area";
-import { geocodePhoton, ADDRESS_KEY } from "@/lib/map/mount";
+import { geocodePhoton, photonSuggest, ADDRESS_KEY, type Suggestion } from "@/lib/map/mount";
+import { addressComplete, sameTown } from "@/lib/book/address-check";
 import { VISIT_KEY, type LastVisit } from "@/lib/book/calendar";
 import { depositFor, depositOn, estimateOf, taxesOn } from "@/lib/booking/deposit";
 import { cleanVin, decodeVin, isValidVin, readVin, vinFormatOk } from "@/lib/book/vin";
@@ -96,7 +97,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const rules: Record<number, [string, (v: string) => boolean][]> = {
     0: [["service", () => picked().length > 0], ["rim", () => !picked().includes("tire-install") || !!rim()]],
     1: [
-      ["address", (v) => v.length > 4],
+      ["address", (v) => addressComplete(v)],
       ["postal", (v) => /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(v.trim())],
       ["parking", (v) => !!v],
       ["parkingConsent", () => !atOffice() || !!value("parkingConsent")],
@@ -295,12 +296,23 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     areaState = "";
     checkedFor = q;
     if (q.length < 6) return (cover.textContent = "");
+    // A number and a street name first: "245 rue" lands in the middle of a
+    // town and would read as "in our area".
+    if (!addressComplete(q)) {
+      cover.dataset.state = "partial";
+      return (cover.textContent = b.coverage.partial);
+    }
     cover.dataset.state = "checking";
     cover.textContent = b.coverage.checking;
     try {
       const hit = await geocodePhoton(q, { center, lang: cfg.lang });
       if (mine !== lookup) return;
       if (!hit) return (cover.textContent = "");
+      // Found the town but not the street: say so instead of "in our area".
+      if (!hit.street || !sameTown(q, hit.town)) {
+        cover.dataset.state = "partial";
+        return (cover.textContent = b.coverage.noStreet);
+      }
       const inside = covered(hit.at);
       areaState = inside ? "in" : "out";
       if (inside) $('[data-err="outside"]').classList.remove("on");
@@ -317,6 +329,77 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     pause = window.setTimeout(coverCheck, 900);
   });
   if (address.value) coverCheck();
+
+  // --- Address suggestions as you type (test site only, lib/preview.ts) -----
+  const list = form.querySelector<HTMLUListElement>("[data-addr-list]");
+  if (list) {
+    let hits: Suggestion[] = [];
+    let active = -1;
+    let typing = 0;
+    let ctl: AbortController | null = null;
+    const close = () => {
+      list.hidden = true;
+      address.setAttribute("aria-expanded", "false");
+      address.removeAttribute("aria-activedescendant");
+      active = -1;
+    };
+    const mark = (i: number) => {
+      active = i;
+      [...list.children].forEach((li, n) => li.setAttribute("aria-selected", String(n === i)));
+      if (i >= 0) address.setAttribute("aria-activedescendant", `addr-${i}`);
+    };
+    const choose = (s: Suggestion) => {
+      address.value = s.address;
+      const postal = form.querySelector<HTMLInputElement>('[name="postal"]');
+      if (postal && s.postal && !postal.value) postal.value = s.postal.toUpperCase();
+      close();
+      clearTimeout(pause);
+      resetConsent();
+      coverCheck();
+    };
+    const suggest = async () => {
+      const q = address.value.trim();
+      if (q.length < 4) return close();
+      ctl?.abort();
+      ctl = new AbortController();
+      try {
+        hits = await photonSuggest(q, { center, lang: cfg.lang }, ctl.signal);
+      } catch {
+        return;
+      }
+      if (!hits.length || document.activeElement !== address) return close();
+      list.replaceChildren(...hits.map((s, i) => {
+        const li = document.createElement("li");
+        li.id = `addr-${i}`;
+        li.setAttribute("role", "option");
+        li.textContent = s.label;
+        // mousedown, so the field doesn't lose focus (and close) first.
+        li.addEventListener("mousedown", (e) => { e.preventDefault(); choose(s); });
+        return li;
+      }));
+      list.hidden = false;
+      address.setAttribute("aria-expanded", "true");
+      mark(-1);
+    };
+    address.addEventListener("input", () => {
+      clearTimeout(typing);
+      typing = window.setTimeout(suggest, 250);
+    });
+    address.addEventListener("keydown", (e) => {
+      if (list.hidden) return;
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const n = hits.length;
+        mark(e.key === "ArrowDown" ? (active + 1) % n : (active - 1 + n) % n);
+      } else if (e.key === "Enter" && active >= 0) {
+        // Picks the suggestion instead of moving to the next step.
+        e.preventDefault();
+        e.stopPropagation();
+        choose(hits[active]);
+      } else if (e.key === "Escape") close();
+    });
+    address.addEventListener("blur", () => setTimeout(close, 120));
+  }
 
   // --- Office or business parking: the property's permission ---------------
   const consentField = form.querySelector<HTMLInputElement>('[name="parkingConsent"]')!;

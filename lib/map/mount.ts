@@ -312,7 +312,42 @@ export async function geocodePhoton(q: string, cfg: Pick<Config, "center" | "lan
   if (!f) return null;
   const p = f.properties ?? {};
   const label = [[p.housenumber, p.street].filter(Boolean).join(" "), p.city ?? p.name].filter(Boolean).join(", ");
-  return { at: f.geometry.coordinates as LngLat, label };
+  const street: string | undefined = p.street ?? (p.type === "street" ? p.name : undefined);
+  const town: string | undefined = p.city ?? p.town ?? p.village ?? p.district;
+  return { at: f.geometry.coordinates as LngLat, label, street, town };
+}
+
+export type Suggestion = { label: string; address: string; postal: string; at: LngLat };
+
+/** Address suggestions as the visitor types (Photon, Greater Montréal only):
+ *  houses and streets, never whole towns. */
+export async function photonSuggest(q: string, cfg: Pick<Config, "center" | "lang">, signal?: AbortSignal): Promise<Suggestion[]> {
+  const u = new URL("https://photon.komoot.io/api/");
+  u.searchParams.set("q", expand(q));
+  u.searchParams.set("bbox", "-74.9,45.0,-73.3,45.8");
+  u.searchParams.set("lat", String(cfg.center[1]));
+  u.searchParams.set("lon", String(cfg.center[0]));
+  u.searchParams.set("limit", "8");
+  u.searchParams.set("lang", cfg.lang === "fr" ? "fr" : "en");
+  u.searchParams.append("layer", "house");
+  u.searchParams.append("layer", "street");
+  const r = await fetch(u, { signal });
+  if (!r.ok) return [];
+  const seen = new Set<string>();
+  const out: Suggestion[] = [];
+  for (const f of (await r.json()).features ?? []) {
+    const p = f.properties ?? {};
+    const street = p.street ?? (p.type === "street" ? p.name : undefined);
+    if (!street) continue;
+    const town = p.city ?? p.town ?? p.village ?? p.district ?? "";
+    const line = [p.housenumber, street].filter(Boolean).join(" ");
+    const address = [line, town].filter(Boolean).join(", ");
+    if (seen.has(address)) continue;
+    seen.add(address);
+    out.push({ label: [address, p.postcode].filter(Boolean).join(" · "), address, postal: p.postcode ?? "", at: f.geometry.coordinates as LngLat });
+    if (out.length === 5) break;
+  }
+  return out;
 }
 
 /** Street abbreviations Photon doesn't read, in both languages. */

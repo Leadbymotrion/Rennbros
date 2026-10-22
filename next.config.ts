@@ -17,7 +17,12 @@ const nextConfig: NextConfig = {
   /* Which deploy a page came from, so a home-screen copy can tell it's out of
      date (components/site/AutoUpdate.tsx). Netlify sets COMMIT_REF and
      DEPLOY_ID while building; locally it's the build time. */
-  env: { NEXT_PUBLIC_BUILD_ID: process.env.DEPLOY_ID || process.env.COMMIT_REF || String(Date.now()) },
+  env: {
+    NEXT_PUBLIC_BUILD_ID: process.env.DEPLOY_ID || process.env.COMMIT_REF || String(Date.now()),
+    /* Features still being tried out show on the test copy only (NOINDEX=1 is
+       set on rennbros-test alone), so staging can merge without exposing them. */
+    NEXT_PUBLIC_PREVIEW: process.env.NOINDEX === "1" ? "1" : "",
+  },
   /* The root layout lives in app/[lang]; global-not-found.tsx renders a
      complete page for a URL that matches nothing. */
   experimental: {

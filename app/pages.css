@@ -89,6 +89,17 @@
   .cover[data-state="in"] { color: var(--color-ok); }
   .cover[data-state="out"] { color: var(--color-red-ink); }
   .cover[data-state="checking"] { color: var(--color-ink-3); }
+  .cover[data-state="partial"] { color: var(--color-ink-2); }
+
+  /* Address suggestions (test site): a plain list under the field. */
+  .addr { position: relative; }
+  .addr__list {
+    position: absolute; z-index: 20; inset: calc(100% + 4px) 0 auto; margin: 0; padding: 0.3rem; list-style: none;
+    background: var(--color-card); border: 1px solid var(--color-rule-2); border-radius: var(--radius-sm);
+    box-shadow: 0 12px 28px -12px rgb(31 34 39 / 0.25);
+  }
+  .addr__list li { padding: 0.6rem 0.7rem; border-radius: 7px; cursor: pointer; font-size: 0.9375rem; line-height: 1.35; }
+  .addr__list li[aria-selected="true"], .addr__list li:hover { background: var(--color-mist); }
 
   .grid2, .grid3 { display: grid; gap: 1rem; }
   @media (min-width: 40em) {

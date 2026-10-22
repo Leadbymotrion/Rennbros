@@ -6,6 +6,7 @@ import { business } from "@/lib/business";
 import { dict, href, money, price, duration, servicesIn, type Lang } from "@/lib/i18n";
 import { MOUNT } from "@/lib/services";
 import { depositOn } from "@/lib/booking/deposit";
+import { PREVIEW } from "@/lib/preview";
 import { mountFlow } from "@/lib/book/flow";
 import { Wordmark } from "@/components/site/Wordmark";
 
@@ -113,7 +114,14 @@ export function BookingForm({ lang }: { lang: Lang }) {
             <legend className="step__title d3" tabIndex={-1}>{b.titles[1]}</legend>
             <label className="field">
               <span>{b.where.address}</span>
-              <input className="input" name="address" type="text" autoComplete="street-address" required />
+              {PREVIEW ? (
+                <span className="addr">
+                  <input className="input" name="address" type="text" autoComplete="street-address" required role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="addr-list" />
+                  <ul className="addr__list" id="addr-list" role="listbox" aria-label={b.coverage.suggest} data-addr-list hidden />
+                </span>
+              ) : (
+                <input className="input" name="address" type="text" autoComplete="street-address" required />
+              )}
               <span className="help">{b.where.addressHelp}</span>
               <span className="cover" data-cover aria-live="polite" />
             </label>
