@@ -68,8 +68,6 @@ const nextConfig: NextConfig = {
       beforeFiles: [
         // The QR-code links page: a standalone file in public/.
         { source: "/links", destination: "/links.html" },
-        // Sample promo banner shown to the owners (test site only until approved).
-        { source: "/promo-demo", destination: "/promo-demo/index.html" },
         { source: "/", destination: "/en" },
         {
           source: "/:path((?!fr(?:/|$)|en(?:/|$)|_next/|api/|\\.well-known/)(?!.*\\.[a-zA-Z0-9]+$).+)",
