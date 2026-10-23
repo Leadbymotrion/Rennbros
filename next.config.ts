@@ -78,7 +78,7 @@ const nextConfig: NextConfig = {
           // Enforced on the test copy first; on rennbros.com it reports only
           // (browser console) until a real payment has been tried with it on.
           { key: "Content-Security-Policy", value: process.env.NOINDEX === "1" || process.env.CSP_ENFORCE === "1" ? CSP : "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests" },
-          ...(process.env.NOINDEX === "1" || process.env.CSP_ENFORCE === "1" ? [] : [{ key: "Content-Security-Policy-Report-Only", value: CSP }]),
+          ...(process.env.NOINDEX === "1" || process.env.CSP_ENFORCE === "1" ? [] : [{ key: "Content-Security-Policy-Report-Only", value: CSP.replace("; upgrade-insecure-requests", "") }]),
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
           { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },

@@ -262,7 +262,7 @@ export const fr: Dict = {
   },
 
   map: {
-    gestures: ["Utilisez Ctrl + molette pour zoomer sur la carte", "Utilisez deux doigts pour déplacer la carte"] as [string, string],
+    gestures: ["Utilisez Ctrl + molette pour zoomer sur la carte", "Utilisez deux doigts pour déplacer, zoomer ou tourner la carte"] as [string, string],
     aria: "Carte du territoire desservi par Renn Bros",
     legend: "Territoire desservi",
     loading: "Chargement de la carte…",

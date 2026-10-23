@@ -106,27 +106,42 @@ async function libre(box: HTMLElement, cfg: Config): Promise<Api> {
   // The package is CommonJS in some builds and ESM in others.
   const maplibregl = ((mod as any).default ?? mod) as typeof import("maplibre-gl");
   maplibregl.setWorkerUrl(libreWorker);
+  // Touch screens (phones, iPads): one finger scrolls the page, two fingers
+  // move, pinch-zoom and turn the map. Mouse: the wheel zooms right away.
+  const touch = matchMedia("(pointer: coarse)").matches;
+  const [[w, s], [e, n]] = bounds(cfg.coverage);
+  const padX = (e - w) * 0.8, padY = (n - s) * 0.8;
   const map = new maplibregl.Map({
     container: box,
     style: "https://tiles.openfreemap.org/styles/positron",
     bounds: bounds(cfg.coverage),
     fitBoundsOptions: { padding: 36 },
     attributionControl: { compact: true },
-    cooperativeGestures: true,
-    locale: {
-      "CooperativeGesturesHandler.WindowsHelpText": cfg.gestures[0],
-      "CooperativeGesturesHandler.MacHelpText": cfg.gestures[0].replace("Ctrl", "⌘"),
-      "CooperativeGesturesHandler.MobileHelpText": cfg.gestures[1],
-    },
+    cooperativeGestures: touch,
+    locale: { "CooperativeGesturesHandler.MobileHelpText": cfg.gestures[1] },
+    // Two-finger twist turns the map on touch; the mouse doesn't rotate.
     dragRotate: false,
     pitchWithRotate: false,
     touchPitch: false,
+    // Stay on the region: no drifting off to the ocean or the whole planet.
+    maxBounds: [[w - padX, s - padY], [e + padX, n + padY]],
+    minZoom: 8,
+    maxZoom: 18,
+    renderWorldCopies: false,
     // 3x phone screens draw at 2x: a third less work for a slow phone, and
     // the difference can't be seen at that density.
     pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
     fadeDuration: 0,
   });
-  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+  // Mouse: + and − buttons. Touch: pinch does that, so only the compass,
+  // which appears once the map is turned and points it north again.
+  map.addControl(new maplibregl.NavigationControl({ showZoom: !touch, showCompass: touch, visualizePitch: false }), "bottom-right");
+  if (touch) {
+    const compass = box.querySelector<HTMLElement>(".maplibregl-ctrl-compass")?.parentElement;
+    const sync = () => compass && (compass.hidden = Math.abs(map.getBearing()) < 1);
+    map.on("rotate", sync);
+    sync();
+  }
   // The stylesheet arrives with the module; size the canvas to the frame
   // once it has, and whenever the frame changes.
   new ResizeObserver(() => map.resize()).observe(box);
@@ -160,6 +175,17 @@ async function libre(box: HTMLElement, cfg: Config): Promise<Api> {
     el.addEventListener("click", () => box.closest(".smap")!.dispatchEvent(new CustomEvent("smap:town", { detail: t.key })));
     new maplibregl.Marker({ element: el }).setLngLat(t.at).addTo(map);
   }
+
+  // Small maps (phones): the town dots crowd each other and the town names
+  // when zoomed out, so they appear once the map is zoomed in a little.
+  const towns = () => box.classList.toggle("towns-off", box.clientWidth < 560 && map.getZoom() < 10.4);
+  map.on("zoom", towns);
+  new ResizeObserver(towns).observe(box);
+  towns();
+  // The map credits start folded into the small "i" button.
+  const attrib = box.querySelector(".maplibregl-ctrl-attrib");
+  attrib?.classList.remove("maplibregl-compact-show");
+  attrib?.removeAttribute("open");
 
   // Ready once the tiles are actually drawn (or after a few seconds regardless).
   await Promise.race([new Promise<void>((res) => map.once("idle", () => res())), new Promise((res) => setTimeout(res, 6000))]);
@@ -200,7 +226,7 @@ async function google(box: HTMLElement, cfg: Config): Promise<Api> {
     zoom: 10,
     disableDefaultUI: true,
     zoomControl: true,
-    gestureHandling: "cooperative",
+    gestureHandling: matchMedia("(pointer: coarse)").matches ? "cooperative" : "greedy",
     clickableIcons: false,
     styles: LIGHT,
   });

@@ -233,7 +233,7 @@
 
 /* --- Map ------------------------------------------------------------------------ */
 .smap { display: grid; gap: 1.5rem; min-width: 0; }
-.smap__canvas { position: relative; overflow: hidden; isolation: isolate; min-width: 0; contain: inline-size; border-radius: var(--radius-lg); background: #eceef0; width: 100%; aspect-ratio: 4 / 5; border: 1px solid var(--color-rule); }
+.smap__canvas { position: relative; overflow: hidden; isolation: isolate; min-width: 0; contain: inline-size; border-radius: var(--radius-lg); background: #eceef0; width: 100%; aspect-ratio: 1 / 1; touch-action: pan-y; border: 1px solid var(--color-rule); }
 @media (min-width: 37.5em) { .smap__canvas { aspect-ratio: 5 / 4; } }
 /* More specific than MapLibre's own ".maplibregl-map { position: relative }",
    which loads later and would otherwise collapse the map to zero height. */
@@ -287,6 +287,8 @@ html.js .smap__check { display: grid; }
 .smap .smap-town { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; background: none; cursor: pointer; }
 .smap .smap-town::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #1f2227; box-shadow: 0 0 0 2px #fff; transition: scale 180ms; }
 .smap .smap-town:hover::before { scale: 1.5; }
+/* MapLibre sets each marker's opacity itself, so hiding uses visibility. */
+.smap .towns-off .smap-town { visibility: hidden; pointer-events: none; }
 .smap .smap-pin { display: flex; align-items: center; gap: 8px; pointer-events: none; }
 .smap .smap-pin::before { content: ""; flex: none; width: 18px; height: 18px; border-radius: 50%; background: #c8161d; box-shadow: 0 0 0 5px rgb(200 22 29 / 0.18), 0 0 0 2px #fff inset; animation: pin-drop 520ms var(--ease-out) both; }
 .smap .smap-pin span { padding: 0.3rem 0.7rem; border-radius: 999px; background: #fff; box-shadow: var(--shadow); font: 500 0.8125rem/1.2 var(--font-sans); color: #1f2227; white-space: nowrap; animation: pin-label 420ms 160ms var(--ease-out) both; }

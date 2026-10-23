@@ -259,7 +259,7 @@ export const en = {
   },
 
   map: {
-    gestures: ["Use Ctrl + scroll to zoom the map", "Use two fingers to move the map"] as [string, string],
+    gestures: ["Use Ctrl + scroll to zoom the map", "Use two fingers to move, zoom or turn the map"] as [string, string],
     aria: "Map of the Renn Bros service area",
     legend: "Service area",
     loading: "Loading the map…",
