@@ -101,6 +101,16 @@ html {
   text-size-adjust: 100%;
   scroll-padding-top: calc(var(--head-h) + 1.5rem);
 }
+/* iPhone and iPad: follow the device's Text Size setting (Settings > Display
+   > Text Size, and the larger accessibility sizes). Safari only applies it to
+   pages that ask, through the system "body" font. At the default setting it
+   is 17px, the same as the body text below, so nothing changes until the
+   visitor changes their setting. Other browsers already follow theirs, since
+   every size on the site is in rem. */
+@supports (font: -apple-system-body) and (-webkit-touch-callout: none) {
+  html { font: -apple-system-body; }
+  body { font-size: 1rem; }
+}
 body {
   background: var(--color-paper);
   color: var(--color-ink);
