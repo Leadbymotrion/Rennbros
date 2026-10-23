@@ -404,7 +404,11 @@ html.js .smap__check { display: grid; }
   position: relative; overflow: hidden; isolation: isolate;
   --fleet-h: 4.75rem; height: var(--fleet-h); background: #16181c; color: #f1f2f4;
 }
-:root[data-theme="dark"] .fleet { --fleet-accent: #e0262d; --fleet-on: #fff; background: #0e0f12; border-bottom: 1px solid #2a2d33; }
+:root[data-theme="dark"] .fleet {
+  /* Night mode: the light grey of the winter promo strip, dark text, red accents, the daytime photo. */
+  --fleet-accent: #c8161d; --fleet-on: #fff;
+  background: linear-gradient(90deg, #dfe0e2 0%, #ecedee 45%, #e6e7e9 100%); color: #1f2227;
+}
 .fleet__photo {
   position: absolute; inset: 0 0 0 auto; z-index: -1; width: var(--fleet-photo);
   /* The whole row of cars, fitted to the band's height and anchored right. */
@@ -419,7 +423,7 @@ html.js .smap__check { display: grid; }
 .fleet__inner { position: relative; height: 100%; display: flex; align-items: center; gap: 1.5rem; padding-inline: clamp(1rem, 3vw, 2.5rem); }
 .fleet--photo .fleet__inner { padding-right: calc(var(--fleet-photo) * 0.86); }
 .fleet__tag { flex: none; margin: 0; font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fleet-accent); }
-:root[data-theme="dark"] .fleet__tag { color: #ff6b6f; }
+:root[data-theme="dark"] .fleet__tag { color: #a8121a; }
 .fleet__window {
   flex: 1; min-width: 0; overflow: hidden;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
