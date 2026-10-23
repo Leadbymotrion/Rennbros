@@ -54,6 +54,23 @@ export function ServiceMap({ lang, check = true }: { lang: Lang; check?: boolean
           <img src="/media/map/area-tall.webp" alt="" width={780} height={975} decoding="async" />
         </picture>
         <p className="smap__legend"><span className="smap__swatch" aria-hidden />{t.map.legend}</p>
+        {check && (
+          /* Out of the area: never a dead end. A compact card in the map's
+             corner, so the pin stays in view; call, text or email from it. */
+          <div className="smap__away" data-outside-card role="status" hidden>
+            <div className="smap__away-head">
+              <MapPin size={18} weight="fill" aria-hidden />
+              <p className="smap__away-title">{o.title}</p>
+              <button type="button" className="smap__away-x" data-outside-close aria-label={t.book.office.close}>×</button>
+            </div>
+            <p className="smap__away-body">{o.body}</p>
+            <div className="smap__away-actions">
+              <a className="btn btn--red btn--sm" href={`tel:${business.phone.tel}`}><Phone size={15} weight="bold" aria-hidden />{o.call}</a>
+              <a className="btn btn--ghost btn--sm" href={`sms:${business.phone.tel}`}><ChatText size={15} weight="bold" aria-hidden />{o.text}</a>
+              <a className="btn btn--ghost btn--sm" href={`mailto:${business.email}?subject=${encodeURIComponent(o.emailSubject)}`}><EnvelopeSimple size={15} weight="bold" aria-hidden />{o.email}</a>
+            </div>
+          </div>
+        )}
       </div>
       {check && (
         <form className="smap__check" data-check>
@@ -70,22 +87,6 @@ export function ServiceMap({ lang, check = true }: { lang: Lang; check?: boolean
             <p data-result-text />
             <a className="link smap__book" href={href(lang, "/book")}>{t.check.book}</a>
           </div>
-          {/* Out of the area: never a dead end. Call, text or email right away. */}
-          <dialog className="notice" data-outside-dialog aria-labelledby="smap-outside-title">
-            <div className="notice__head">
-              <MapPin size={22} weight="fill" aria-hidden />
-              <h3 className="notice__title" id="smap-outside-title">{o.title}</h3>
-              <button type="button" className="notice__x" data-outside-close aria-label={t.book.office.close}>×</button>
-            </div>
-            <p>{o.body}</p>
-            <p className="notice__phone num"><a className="link" href={`tel:${business.phone.tel}`}>{business.phone.display}</a> · <a className="link" href={`mailto:${business.email}`}>{business.email}</a></p>
-            <div className="notice__actions">
-              <a className="btn btn--red" href={`tel:${business.phone.tel}`}><Phone size={16} weight="bold" aria-hidden />{o.call}</a>
-              <a className="btn btn--ghost" href={`sms:${business.phone.tel}`}><ChatText size={16} weight="bold" aria-hidden />{o.text}</a>
-              <a className="btn btn--ghost" href={`mailto:${business.email}?subject=${encodeURIComponent(o.emailSubject)}`}><EnvelopeSimple size={16} weight="bold" aria-hidden />{o.email}</a>
-            </div>
-            <button type="button" className="link notice__change" data-outside-close>{o.tryAnother}</button>
-          </dialog>
         </form>
       )}
     </div>

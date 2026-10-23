@@ -266,9 +266,8 @@ function wireCheck(root: HTMLElement, cfg: Config, api: () => Api | null) {
     text.textContent = cfg.text[state];
   };
 
-  form.querySelectorAll("[data-outside-close]").forEach((b) =>
-    b.addEventListener("click", () => form.querySelector<HTMLDialogElement>("[data-outside-dialog]")?.close()),
-  );
+  const away = root.querySelector<HTMLElement>("[data-outside-card]");
+  away?.querySelector("[data-outside-close]")?.addEventListener("click", () => (away.hidden = true));
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const q = (new FormData(form).get("q") ?? "").toString().trim();
@@ -282,8 +281,8 @@ function wireCheck(root: HTMLElement, cfg: Config, api: () => Api | null) {
       api()?.pin(hit.at, q.split(",")[0].trim());
       const inside = covered(hit.at);
       say(inside ? "in" : "out");
-      // Out of the area: offer to call, text or email right away.
-      if (!inside) form.querySelector<HTMLDialogElement>("[data-outside-dialog]")?.showModal();
+      // Out of the area: the contact card in the map's corner, pin still visible.
+      if (away) away.hidden = inside;
       // Carried to the booking form in this tab only, never in a URL.
       try { sessionStorage.setItem(ADDRESS_KEY, hit.label || q); } catch {}
     } catch (err) {
