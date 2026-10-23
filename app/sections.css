@@ -406,12 +406,15 @@ html.js .smap__check { display: grid; }
 }
 :root[data-theme="dark"] .fleet { --fleet-accent: #e0262d; --fleet-on: #fff; background: #0e0f12; border-bottom: 1px solid #2a2d33; }
 .fleet__photo {
-  position: absolute; inset: 0 0 0 auto; z-index: -1; width: min(42%, 40rem);
+  position: absolute; inset: 0 0 0 auto; z-index: -1; width: var(--fleet-photo);
   background: center 68% / cover no-repeat;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 38%); mask-image: linear-gradient(90deg, transparent, #000 38%);
 }
-.fleet__inner { position: relative; height: 100%; display: flex; align-items: center; gap: 1.25rem; }
-.fleet--photo .fleet__inner { padding-right: min(30%, 28rem); }
+/* Full width, not the page column: the label hugs the left edge, the button
+   sits where the photo starts, and the words get everything in between. */
+.fleet { --fleet-photo: min(42%, 40rem); }
+.fleet__inner { position: relative; height: 100%; display: flex; align-items: center; gap: 1.5rem; padding-inline: clamp(1rem, 3vw, 2.5rem); }
+.fleet--photo .fleet__inner { padding-right: calc(var(--fleet-photo) * 0.72); }
 .fleet__tag { flex: none; margin: 0; font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fleet-accent); }
 :root[data-theme="dark"] .fleet__tag { color: #ff6b6f; }
 .fleet__window {
@@ -438,7 +441,7 @@ html.js .smap__check { display: grid; }
 @media (max-width: 40em) {
   .fleet { height: 3.75rem; }
   .fleet__tag { display: none; }
-  .fleet__photo { width: 36%; }
+  .fleet { --fleet-photo: 36%; }
   .fleet--photo .fleet__inner { padding-right: 30%; gap: 0.75rem; }
   .fleet__track li { font-size: 0.9375rem; }
   .fleet__call { padding: 0.5rem 0.85rem; font-size: 0.875rem; gap: 0.35rem; }

@@ -20,7 +20,7 @@ export function FleetBanner({ lang }: { lang: Lang }) {
   return (
     <section className={`fleet${hasPhoto ? " fleet--photo" : ""}`} aria-label={f.label}>
       {hasPhoto && <span className="fleet__photo" style={{ backgroundImage: `url(${PHOTO})` }} aria-hidden="true" />}
-      <div className="fleet__inner page">
+      <div className="fleet__inner">
         <p className="fleet__tag">{f.label}</p>
         <div className="fleet__window">
           <ul className="fleet__track">
