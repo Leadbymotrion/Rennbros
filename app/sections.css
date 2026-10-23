@@ -419,7 +419,7 @@ html.js .smap__check { display: grid; }
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
 }
-.fleet__track { list-style: none; margin: 0; padding: 0; display: flex; width: max-content; animation: fleet-drift 51s linear infinite; }
+.fleet__track { list-style: none; margin: 0; padding: 0; display: flex; width: max-content; animation: fleet-drift 75s linear infinite; }
 .fleet__track li { white-space: nowrap; font-size: 1.0625rem; font-weight: 500; }
 .fleet__track li::after { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 1.1rem 0.15em; border-radius: 50%; background: var(--fleet-accent); vertical-align: middle; }
 .fleet__window:hover .fleet__track { animation-play-state: paused; }
