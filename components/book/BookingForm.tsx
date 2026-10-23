@@ -72,6 +72,22 @@ export function BookingForm({ lang }: { lang: Lang }) {
           {/* 1 · Service */}
           <fieldset className="step" data-step="0">
             <legend className="step__title d3" tabIndex={-1}>{b.titles[0]}</legend>
+            {PREVIEW && (
+              /* How many cars first (test copy only, lib/preview.ts): with 2 or 3, every list goes compact. */
+              <div className="cars" data-cars>
+                <div className="cars__pick">
+                  <span id="cars-label" className="cars__label">{b.cars.legend}</span>
+                  <div className="pills" role="radiogroup" aria-labelledby="cars-label">
+                    {["1", "2", "3", "4"].map((n) => (
+                      <label key={n} className="pill"><input type="radio" name="cars" value={n} defaultChecked={n === "1"} /><span>{n === "4" ? b.cars.many : n}</span></label>
+                    ))}
+                  </div>
+                </div>
+                <span className="help">{b.cars.help}</span>
+                <p className="cars__many" data-cars-many hidden>{b.cars.manyNote} <a href={`tel:${business.phone.tel}`}>{business.phone.display}</a></p>
+                <p className="err" data-err="carsMany">{b.cars.errMany}</p>
+              </div>
+            )}
             <p className="help step__help">{b.service.help}</p>
             <div className="choices">
               {services.map((s) => (
@@ -105,19 +121,7 @@ export function BookingForm({ lang }: { lang: Lang }) {
               ))}
             </div>
             {PREVIEW && (
-              /* More than one car, same visit (test copy only, lib/preview.ts). */
-              <div className="cars" data-cars>
-                <div className="field">
-                  <span id="cars-label">{b.cars.legend}</span>
-                  <div className="pills" role="radiogroup" aria-labelledby="cars-label">
-                    {["1", "2", "3", "4"].map((n) => (
-                      <label key={n} className="pill"><input type="radio" name="cars" value={n} defaultChecked={n === "1"} /><span>{n === "4" ? b.cars.many : n}</span></label>
-                    ))}
-                  </div>
-                  <span className="help">{b.cars.help}</span>
-                </div>
-                <p className="cars__many" data-cars-many hidden>{b.cars.manyNote} <a href={`tel:${business.phone.tel}`}>{business.phone.display}</a></p>
-                <p className="err" data-err="carsMany">{b.cars.errMany}</p>
+              <>
                 {[2, 3].map((n) => (
                   <fieldset key={n} className="car" data-car={n} hidden>
                     <legend className="car__title">{b.cars.servicesFor(n)}</legend>
@@ -130,7 +134,7 @@ export function BookingForm({ lang }: { lang: Lang }) {
                 ))}
                 <p className="help cars__tires" data-cars-tires hidden>{b.cars.tiresNote}</p>
                 <p className="err" data-err="carServices">{b.cars.errServices}</p>
-              </div>
+              </>
             )}
             <p className="total" data-total aria-live="polite" />
             <p className="price-notice">{b.confirm.priceNotice}</p>
@@ -299,7 +303,7 @@ export function BookingForm({ lang }: { lang: Lang }) {
                       <label className="field"><span>{b.you.model}</span><input className="input" name={`car${n}Model`} /></label>
                     </div>
                     <label className="field">
-                      <span>{b.you.vin} <em className="opt">({b.cars.car(n)})</em></span>
+                      <span>{b.you.vin} <em className="opt">({b.you.vinRequired})</em></span>
                       <input className="input" name={`car${n}Vin`} maxLength={17} autoCapitalize="characters" spellCheck={false} />
                     </label>
                   </fieldset>

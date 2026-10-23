@@ -596,7 +596,7 @@ export const en = {
       photoFailed: "A photo couldn't be uploaded. Describe it in the notes instead, or text it to us.",
       photosMax: "That's the limit of 4 photos.",
       optional: "optional",
-      vinRequired: "required for oil changes and brakes",
+      vinRequired: "required",
       notes: "Anything we should know?",
       notesHelp: "Sounds, warning lights, access codes, where to find the keys.",
     },

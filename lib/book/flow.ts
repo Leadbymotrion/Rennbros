@@ -132,7 +132,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       ["name", (v) => v.length > 1],
       ["phone", (v) => v.replace(/\D/g, "").length >= 10],
       ["email", (v) => /^\S+@\S+\.\S+$/.test(v)],
-      ["vin", (v) => !needsVin(picked()) || vinFormatOk(v)],
+      ["vin", (v) => (!needsVin(picked()) && !extraCars().length) || vinFormatOk(v)],
       ["make", (v) => !!v],
       ["model", (v) => !!v],
       ["carDetails", () => extraCars().every((c) => !!c.make && !!c.model && vinFormatOk(c.vin))],
@@ -199,7 +199,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const whenDefault = sum.when.textContent;
   const refreshSummary = () => {
     // VIN: required for oil changes and brakes, optional otherwise.
-    const vinNeeded = needsVin(picked());
+    const vinNeeded = needsVin(picked()) || extraCars().length > 0;
     $$("[data-vin-opt]").forEach((el) => (el.hidden = vinNeeded));
     $$("[data-vin-req]").forEach((el) => (el.hidden = !vinNeeded));
     form.querySelector('[name="vin"]')?.toggleAttribute("required", vinNeeded);

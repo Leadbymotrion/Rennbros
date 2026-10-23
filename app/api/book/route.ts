@@ -85,8 +85,8 @@ export async function POST(request: Request) {
     if (i < 0) return fail(request, lang, "cars", 400, isJSON);
     car1.splice(i, 1);
   }
-  // Oil changes and brakes: parts are matched to the exact car, so the VIN is required.
-  if (needsVin(car1) && !vinFormatOk(s("vin"))) return fail(request, lang, "vin", 400, isJSON);
+  // Oil changes and brakes (or any visit with several cars): the VIN is required.
+  if ((needsVin(car1) || extras.length > 0) && !vinFormatOk(s("vin"))) return fail(request, lang, "vin", 400, isJSON);
   // Office or business lot: only with the customer's consent to the disclosure
   // (they have, or will get, the property's permission).
   const office = (["en", "fr"] as const).some((l) => dict(l).book.where.parkingOptions.at(-1) === s("parking"));

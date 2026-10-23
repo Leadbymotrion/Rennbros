@@ -599,7 +599,7 @@ export const fr: Dict = {
       photoFailed: "Une photo n’a pas pu être téléversée. Décrivez-la dans les notes, ou envoyez-la-nous par texto.",
       photosMax: "C’est la limite de 4 photos.",
       optional: "facultatif",
-      vinRequired: "obligatoire pour les changements d’huile et les freins",
+      vinRequired: "obligatoire",
       notes: "Quelque chose à nous dire?",
       notesHelp: "Bruits, témoins lumineux, codes d’accès, où trouver les clés.",
     },
