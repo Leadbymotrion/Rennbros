@@ -527,6 +527,7 @@ export const en = {
     plain: { date: "Date", window: "Arrival", help: "Choose a date and an arrival time. We confirm the exact time with you." },
     coverage: { partial: "Add the civic number and the street name, like 245 rue Principale.", noStreet: "We couldn't find that street. Check the street name and add the town.", suggest: "Suggested addresses", checking: "Checking your address…", in: "In our area.", out: `Outside our booking area. Please call or text us at ${business.phone.display}.` },
     steps: ["Service", "Where", "When", "You", "Confirm"],
+    stepsLabel: "Booking steps",
     stepOf: (n: number, total: number, name: string) => `Step ${n} of ${total}: ${name}`,
     titles: ["What does the car need?", "Where will the car be?", "Pick a day and time.", "About you and the car.", "Review and pay."],
     service: {

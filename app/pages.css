@@ -26,11 +26,15 @@
   html.js .progress {
     display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; list-style: none; padding: 0;
   }
-  .progress li { display: grid; gap: 0.5rem; font-size: 0.75rem; color: var(--color-ink-3); }
-  .progress li::before { content: ""; height: 3px; border-radius: 3px; background: var(--color-rule); transition: background-color 320ms var(--ease-soft); }
+  .progress li { display: grid; font-size: 0.75rem; color: var(--color-ink-3); }
+  .progress__btn { all: unset; box-sizing: border-box; display: grid; gap: 0.5rem; cursor: pointer; color: inherit; font: inherit; padding-bottom: 0.25rem; }
+  .progress__btn:disabled { cursor: default; }
+  .progress__btn:focus-visible { outline: 2px solid var(--color-red-ink); outline-offset: 3px; border-radius: 4px; }
+  .progress li[data-state="done"] .progress__btn:hover em { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }
+  .progress__btn::before { content: ""; height: 3px; border-radius: 3px; background: var(--color-rule); transition: background-color 320ms var(--ease-soft); }
   .progress li span { display: none; }
   .progress li em { font-style: normal; font-weight: 500; }
-  .progress li[data-state="done"]::before, .progress li[data-state="now"]::before { background: var(--color-red); }
+  .progress li[data-state="done"] .progress__btn::before, .progress li[data-state="now"] .progress__btn::before { background: var(--color-red); }
   .progress li[data-state="now"] { color: var(--color-ink); }
   @media (max-width: 35em) { .progress li em { display: none; } .progress li[data-state="now"] em { display: block; white-space: nowrap; } }
 

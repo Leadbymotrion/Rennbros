@@ -530,6 +530,7 @@ export const fr: Dict = {
     plain: { date: "Date", window: "Arrivée", help: "Choisissez une date et une heure d’arrivée. Nous confirmons l’heure exacte avec vous." },
     coverage: { partial: "Ajoutez le numéro civique et le nom de la rue, par exemple 245, rue Principale.", noStreet: "Nous ne trouvons pas cette rue. Vérifiez le nom de la rue et ajoutez la ville.", suggest: "Adresses suggérées", checking: "Vérification de l’adresse…", in: "Dans notre secteur.", out: `Hors de notre territoire de réservation. Appelez-nous ou textez-nous au ${business.phone.display}.` },
     steps: ["Service", "Où", "Quand", "Vous", "Confirmer"],
+    stepsLabel: "Étapes de la réservation",
     stepOf: (n: number, total: number, name: string) => `Étape ${n} sur ${total} : ${name}`,
     titles: ["De quoi la voiture a-t-elle besoin?", "Où sera la voiture?", "Choisissez le jour et l’heure.", "Vous et la voiture.", "Vérifiez et payez."],
     service: {

@@ -63,8 +63,12 @@ export function BookingForm({ lang }: { lang: Lang }) {
       <div className="book__grid">
         <form ref={form} className="flow" method="post" action="/api/book">
           <input type="hidden" name="lang" value={lang} />
-          <ol className="progress" aria-hidden="true">
-            {b.steps.map((s, i) => <li key={s} data-progress={i}><span className="num">{i + 1}</span><em>{s}</em></li>)}
+          <ol className="progress" aria-label={b.stepsLabel}>
+            {b.steps.map((s, i) => (
+              <li key={s} data-progress={i}>
+                <button type="button" className="progress__btn" data-progress-go={i}><span className="num">{i + 1}</span><em>{s}</em></button>
+              </li>
+            ))}
           </ol>
           <p className="sr-only" aria-live="polite" data-step-announce />
           <p className="remembered" data-remembered aria-live="polite" hidden>{b.remember.welcome} <button type="button" className="link" data-forget>{b.remember.forget}</button></p>
@@ -302,6 +306,14 @@ export function BookingForm({ lang }: { lang: Lang }) {
                       <input className="input" name={`car${n}Vin`} maxLength={17} autoCapitalize="characters" spellCheck={false} />
                       <span className="help">{b.cars.vinFills}</span>
                     </label>
+                    <div className="scan">
+                      <label className="btn btn--ghost btn--sm scan__btn">
+                        <Camera size={18} weight="light" aria-hidden />
+                        {b.you.vinScan}
+                        <input className="sr-only" type="file" accept="image/*" data-car-vin-photo />
+                      </label>
+                      <span className="help scan__status" data-car-vin-status aria-live="polite" />
+                    </div>
                     <div className="grid3">
                       <label className="field"><span>{b.you.year} <em className="opt">({b.you.optional})</em></span><input className="input" name={`car${n}Year`} inputMode="numeric" maxLength={4} /></label>
                       <label className="field"><span>{b.you.make}</span><input className="input" name={`car${n}Make`} /></label>

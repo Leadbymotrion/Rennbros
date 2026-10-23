@@ -88,14 +88,38 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   next.hidden = false;
 
   let at = 0;
-  const go = (n: number, focus = true) => {
+  /** The furthest step reached: the step bar can jump forward up to it. */
+  let furthest = 0;
+  const go = (n: number, focus = true, fromHistory = false) => {
     const dir = n < at ? "back" : "forward";
+    const was = at;
     at = Math.max(0, Math.min(LAST, n));
+    // Each step is a browser history entry: the phone's back gesture or the
+    // browser's back and forward buttons move between steps, not off the page.
+    furthest = Math.max(furthest, at);
+    // History mirrors the steps in order (0, 1, 2…): Back is always the step
+    // before, Forward the step after. Going back steps the history back, so
+    // the later steps stay "forward" until a new path is taken.
+    if (!fromHistory && at !== was) {
+      try {
+        if (at < was) history.go(at - was);
+        // Keep the router's own state alongside ours, or Next.js reloads on Back.
+        else for (let k = was + 1; k <= at; k++) history.pushState({ ...(history.state ?? {}), bookStep: k }, "");
+      } catch {}
+    }
     steps.forEach((s, i) => {
       s.hidden = i !== at;
       s.dataset.dir = dir;
     });
-    progress.forEach((p, i) => (p.dataset.state = i < at ? "done" : i === at ? "now" : "todo"));
+    progress.forEach((p, i) => {
+      p.dataset.state = i < at ? "done" : i === at ? "now" : "todo";
+      const btn = p.querySelector<HTMLButtonElement>("button");
+      if (btn) {
+        btn.disabled = i > furthest;
+        if (i === at) btn.setAttribute("aria-current", "step");
+        else btn.removeAttribute("aria-current");
+      }
+    });
     back.hidden = at === 0;
     next.hidden = at === LAST;
     // The last step is a checkout: its own back link and pay button; the side
@@ -141,8 +165,12 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const check = (n: number) => {
     let first: HTMLElement | null = null;
     for (const [name, ok] of rules[n] ?? []) {
+      const err = form.querySelector<HTMLElement>(`[data-err="${name}"]`);
+      // A rule for a part of the form that isn't on this page (the test copy's
+      // extra cars, say) has nothing to check.
+      if (!err && !form.querySelector(`[name="${name}"]`)) continue;
       const good = ok(name === "slot" || name === "service" ? "" : value(name));
-      $(`[data-err="${name}"]`).classList.toggle("on", !good);
+      err?.classList.toggle("on", !good);
       const input = form.querySelector<HTMLInputElement>(`[name="${name}"]`);
       if (input && input.type !== "radio") input.setAttribute("aria-invalid", String(!good));
       if (!good && !first) first = input ?? $<HTMLElement>(`[data-err="${name}"]`);
@@ -178,6 +206,26 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     if (atOffice() && !value("parkingConsent")) openOffice(true);
   });
   back.addEventListener("click", () => go(at - 1));
+  // The step bar: jump back to any step; forward only through steps that check out.
+  $$<HTMLButtonElement>("[data-progress-go]").forEach((btn) =>
+    btn.addEventListener("click", async () => {
+      const target = Number(btn.dataset.progressGo);
+      if (target <= at) return go(target);
+      if (target > furthest) return;
+      for (let n = at; n < target; n++) {
+        if (n === 1 && address.value.trim().length >= 6 && (address.value.trim() !== checkedFor || areaState === "")) await coverCheck();
+        if (!check(n)) return go(n);
+        if (n === 1 && areaState === "out") { go(1); return outsideDialog?.showModal(); }
+      }
+      go(target);
+    }),
+  );
+  // Browser back and forward between steps.
+  try { history.replaceState({ ...(history.state ?? {}), bookStep: at }, ""); } catch {}
+  addEventListener("popstate", (e) => {
+    const n = (e.state as { bookStep?: number } | null)?.bookStep;
+    if (typeof n === "number") go(Math.min(n, furthest), true, true);
+  });
   $$<HTMLButtonElement>("[data-goto]").forEach((btn) => btn.addEventListener("click", () => go(Number(btn.dataset.goto))));
   // Enter in a text field moves forward instead of submitting half a form.
   form.addEventListener("keydown", (e) => {
@@ -841,28 +889,38 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     set("model", car.model);
     return [car.year, car.make, car.model].filter(Boolean).join(" ");
   };
-  $<HTMLInputElement>("[data-vin-photo]").addEventListener("change", async (e) => {
-    const input = e.currentTarget as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = "";
-    if (!file) return;
-    vinStatus.textContent = b.you.vinReading;
-    try {
-      const got = await readVin(file);
-      if (!got) { vinStatus.textContent = b.you.vinNone; return; }
-      vinInput.value = got.vin;
-      vinInput.dispatchEvent(new Event("input", { bubbles: true }));
-      let msg = got.checked ? b.you.vinRead(got.vin) : b.you.vinUnsure(got.vin);
-      if (got.checked) {
-        const car = await fillFromVin(got.vin);
-        if (car) msg += ` ${b.you.vinDecoded(car)}`;
+  /** A VIN photo for any car: read it, put it in that car's VIN field, fill
+   *  the year, make and model. prefix "" is car 1, "car2"/"car3" the others. */
+  const scanVin = (photo: HTMLInputElement, field: HTMLInputElement, status: HTMLElement, prefix = "") =>
+    photo.addEventListener("change", async () => {
+      const file = photo.files?.[0];
+      photo.value = "";
+      if (!file) return;
+      status.textContent = b.you.vinReading;
+      try {
+        const got = await readVin(file);
+        if (!got) { status.textContent = b.you.vinNone; return; }
+        field.value = got.vin;
+        field.dispatchEvent(new Event("input", { bubbles: true }));
+        let msg = got.checked ? b.you.vinRead(got.vin) : b.you.vinUnsure(got.vin);
+        if (got.checked) {
+          const car = await fillFromVin(got.vin, prefix);
+          if (car) msg += ` ${b.you.vinDecoded(car)}`;
+        }
+        status.textContent = msg;
+      } catch (err) {
+        console.error("[vin]", err);
+        status.textContent = b.you.vinNone;
       }
-      vinStatus.textContent = msg;
-    } catch (err) {
-      console.error("[vin]", err);
-      vinStatus.textContent = b.you.vinNone;
-    }
-  });
+    });
+  scanVin($<HTMLInputElement>("[data-vin-photo]"), vinInput, vinStatus);
+  for (const n of [2, 3]) {
+    const box = form.querySelector<HTMLElement>(`[data-car-details="${n}"]`);
+    const photo = box?.querySelector<HTMLInputElement>("[data-car-vin-photo]");
+    const field = form.querySelector<HTMLInputElement>(`[name="car${n}Vin"]`);
+    const status = box?.querySelector<HTMLElement>("[data-car-vin-status]");
+    if (photo && field && status) scanVin(photo, field, status, `car${n}`);
+  }
   // Cars 2 and 3 (test copy): a valid VIN fills that car's year, make and model.
   for (const n of [2, 3]) {
     const input = form.querySelector<HTMLInputElement>(`[name="car${n}Vin"]`);
