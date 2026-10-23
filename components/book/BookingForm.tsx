@@ -297,15 +297,16 @@ export function BookingForm({ lang }: { lang: Lang }) {
                 {[2, 3].map((n) => (
                   <fieldset key={n} className="car car--details" data-car-details={n} hidden>
                     <legend className="car__title">{b.cars.car(n)}</legend>
+                    <label className="field">
+                      <span>{b.you.vin} <em className="opt">({b.you.vinRequired})</em></span>
+                      <input className="input" name={`car${n}Vin`} maxLength={17} autoCapitalize="characters" spellCheck={false} />
+                      <span className="help">{b.cars.vinFills}</span>
+                    </label>
                     <div className="grid3">
                       <label className="field"><span>{b.you.year} <em className="opt">({b.you.optional})</em></span><input className="input" name={`car${n}Year`} inputMode="numeric" maxLength={4} /></label>
                       <label className="field"><span>{b.you.make}</span><input className="input" name={`car${n}Make`} /></label>
                       <label className="field"><span>{b.you.model}</span><input className="input" name={`car${n}Model`} /></label>
                     </div>
-                    <label className="field">
-                      <span>{b.you.vin} <em className="opt">({b.you.vinRequired})</em></span>
-                      <input className="input" name={`car${n}Vin`} maxLength={17} autoCapitalize="characters" spellCheck={false} />
-                    </label>
                   </fieldset>
                 ))}
                 <p className="err" data-err="carDetails">{b.cars.errDetails}</p>

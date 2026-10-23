@@ -572,6 +572,7 @@ export const fr: Dict = {
       tiresNote: "Changement de pneus sur plus d’une voiture : appelez-nous pour l’ajouter à la visite.",
       detailsTitle: "Les autres voitures",
       detailsHelp: "Il nous faut le NIV de chaque voiture de plus pour apporter les bonnes pièces.",
+      vinFills: "Entrez d’abord le NIV et nous remplissons l’année, la marque et le modèle.",
       errServices: "Choisissez au moins un service pour chaque voiture de plus.",
       errMany: "Pour 4 voitures ou plus, appelez-nous ou textez-nous.",
       errDetails: "Entrez la marque, le modèle et le NIV de 17 caractères de chaque voiture de plus.",

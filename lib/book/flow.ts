@@ -830,10 +830,10 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const vinStatus = $("[data-vin-status]");
   $("[data-vin-scan]").hidden = false;
   /** Fill year, make and model from a good VIN, without overwriting what's typed. */
-  const fillFromVin = async (vin: string) => {
+  const fillFromVin = async (vin: string, prefix = "") => {
     const car = await decodeVin(vin);
     const set = (name: string, v?: string) => {
-      const f = form.querySelector<HTMLInputElement>(`[name="${name}"]`);
+      const f = form.querySelector<HTMLInputElement>(`[name="${prefix}${prefix ? name[0].toUpperCase() + name.slice(1) : name}"]`);
       if (f && v && !f.value.trim()) { f.value = v; f.dispatchEvent(new Event("input", { bubbles: true })); }
     };
     set("year", car.year);
@@ -863,6 +863,18 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       vinStatus.textContent = b.you.vinNone;
     }
   });
+  // Cars 2 and 3 (test copy): a valid VIN fills that car's year, make and model.
+  for (const n of [2, 3]) {
+    const input = form.querySelector<HTMLInputElement>(`[name="car${n}Vin"]`);
+    let done = "";
+    input?.addEventListener("input", () => {
+      const v = cleanVin(input.value);
+      if (v !== done && isValidVin(v)) {
+        done = v;
+        fillFromVin(v, `car${n}`).catch(() => {});
+      }
+    });
+  }
   // Typed or pasted: decode once it's a valid VIN.
   let decodedVin = "";
   vinInput.addEventListener("input", async () => {
