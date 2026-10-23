@@ -8,6 +8,8 @@ import { PREVIEW } from "@/lib/preview";
 /** The office-lot photo, once it's in public/media. Until then the band is
  *  plain, so the test copy never shows a broken image. */
 const PHOTO = "/media/fleet-lot.jpg";
+/** The same lot by day: shown when the site is in night mode, for contrast. */
+const PHOTO_DAY = "/media/fleet-lot-day.jpg";
 const hasPhoto = fs.existsSync(path.join(process.cwd(), "public", PHOTO));
 
 /**
@@ -20,7 +22,7 @@ export function FleetBanner({ lang }: { lang: Lang }) {
   const f = dict(lang).home.fleet;
   return (
     <section className={`fleet${hasPhoto ? " fleet--photo" : ""}${PREVIEW ? " fleet--slim" : ""}`} aria-label={f.label}>
-      {hasPhoto && <span className="fleet__photo" style={{ backgroundImage: `url(${PHOTO})` }} aria-hidden="true" />}
+      {hasPhoto && <span className="fleet__photo" style={{ "--photo-dusk": `url(${PHOTO})`, "--photo-day": `url(${PHOTO_DAY})` } as React.CSSProperties} aria-hidden="true" />}
       <div className="fleet__inner">
         <p className="fleet__tag">{f.label}</p>
         <div className="fleet__window">
