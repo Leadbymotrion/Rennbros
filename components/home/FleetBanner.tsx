@@ -3,6 +3,7 @@ import path from "node:path";
 import { Phone } from "@phosphor-icons/react/dist/ssr";
 import { business } from "@/lib/business";
 import { dict, type Lang } from "@/lib/i18n";
+import { PREVIEW } from "@/lib/preview";
 
 /** The office-lot photo, once it's in public/media. Until then the band is
  *  plain, so the test copy never shows a broken image. */
@@ -18,7 +19,7 @@ const hasPhoto = fs.existsSync(path.join(process.cwd(), "public", PHOTO));
 export function FleetBanner({ lang }: { lang: Lang }) {
   const f = dict(lang).home.fleet;
   return (
-    <section className={`fleet${hasPhoto ? " fleet--photo" : ""}`} aria-label={f.label}>
+    <section className={`fleet${hasPhoto ? " fleet--photo" : ""}${PREVIEW ? " fleet--slim" : ""}`} aria-label={f.label}>
       {hasPhoto && <span className="fleet__photo" style={{ backgroundImage: `url(${PHOTO})` }} aria-hidden="true" />}
       <div className="fleet__inner">
         <p className="fleet__tag">{f.label}</p>

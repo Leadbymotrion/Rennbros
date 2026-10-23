@@ -448,4 +448,9 @@ html.js .smap__check { display: grid; }
   .fleet__call-long { display: none; }
   .fleet__call-short { display: inline; }
 }
+/* The original, slimmer height: shown on the test copy for comparison (Tashii, 2026-10-23). */
+.fleet--slim { height: 3.5rem; }
+.fleet--slim .fleet__track li { font-size: 0.9375rem; }
+.fleet--slim .fleet__call { padding: 0.45rem 1rem; font-size: 0.875rem; }
+@media (max-width: 40em) { .fleet--slim { height: 3rem; } }
 @media (prefers-reduced-motion: reduce) { .fleet__track { animation: none; } }
