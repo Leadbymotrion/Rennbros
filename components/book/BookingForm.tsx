@@ -6,7 +6,7 @@ import { business } from "@/lib/business";
 import { dict, href, money, price, duration, servicesIn, type Lang } from "@/lib/i18n";
 import { MOUNT } from "@/lib/services";
 import { depositOn } from "@/lib/booking/deposit";
-import { PREVIEW } from "@/lib/preview";
+import { on } from "@/lib/preview";
 import { mountFlow } from "@/lib/book/flow";
 import { Wordmark } from "@/components/site/Wordmark";
 
@@ -76,7 +76,7 @@ export function BookingForm({ lang }: { lang: Lang }) {
           {/* 1 · Service */}
           <fieldset className="step" data-step="0">
             <legend className="step__title d3" tabIndex={-1}>{b.titles[0]}</legend>
-            {PREVIEW && (
+            {on("multiCar") && (
               /* How many cars first (test copy only, lib/preview.ts): with 2 or 3, every list goes compact. */
               <div className="cars" data-cars>
                 <div className="cars__pick">
@@ -124,7 +124,7 @@ export function BookingForm({ lang }: { lang: Lang }) {
                 </Fragment>
               ))}
             </div>
-            {PREVIEW && (
+            {on("multiCar") && (
               <>
                 {[2, 3].map((n) => (
                   <fieldset key={n} className="car" data-car={n} hidden>
@@ -150,7 +150,7 @@ export function BookingForm({ lang }: { lang: Lang }) {
             <legend className="step__title d3" tabIndex={-1}>{b.titles[1]}</legend>
             <label className="field">
               <span>{b.where.address}</span>
-              {PREVIEW ? (
+              {on("addressSuggest") ? (
                 <span className="addr">
                   <input className="input" name="address" type="text" autoComplete="street-address" required role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="addr-list" />
                   <ul className="addr__list" id="addr-list" role="listbox" aria-label={b.coverage.suggest} data-addr-list hidden />
@@ -294,7 +294,7 @@ export function BookingForm({ lang }: { lang: Lang }) {
               <p className="err" data-err="make">{b.invalid.make}</p>
               <p className="err" data-err="model">{b.invalid.model}</p>
             </div>
-            {PREVIEW && (
+            {on("multiCar") && (
               <div className="cars-more" data-cars-more hidden>
                 <h3 className="cars-more__title">{b.cars.detailsTitle}</h3>
                 <p className="help">{b.cars.detailsHelp}</p>

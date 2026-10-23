@@ -9,7 +9,7 @@ import { Chrome } from "@/components/site/Chrome";
 import { AutoUpdate } from "@/components/site/AutoUpdate";
 import { StructuredData } from "@/components/site/StructuredData";
 import { clash, general } from "../fonts";
-import { PREVIEW } from "@/lib/preview";
+import { on } from "@/lib/preview";
 import { FleetBanner } from "@/components/home/FleetBanner";
 import { HomeOnly } from "@/components/home/HomeOnly";
 import "../globals.css";
@@ -64,7 +64,7 @@ export const viewport: Viewport = {
 const boot = `document.documentElement.classList.add("js");try{if(localStorage.getItem("rennbros.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}
 addEventListener("load",function(){try{if(getComputedStyle(document.documentElement).getPropertyValue("--color-paper").trim())return;var k="rennbros.cssReload",t=+sessionStorage.getItem(k)||0;if(Date.now()-t<6e4)return;sessionStorage.setItem(k,String(Date.now()));location.reload()}catch(e){}});`;
 
-/* Test copy only (lib/preview.ts): the first visit opens in the visitor's
+/* (lib/preview.ts, LIVE.frenchAuto) The first visit opens in the visitor's
    language, read from the phone's or computer's language settings (the
    browser reports them): English stays English, French opens the French
    site, and any other language opens French too (Québec). After that, the
@@ -79,14 +79,14 @@ export default async function Layout({ children, params }: { children: React.Rea
   return (
     <html lang={t.locale} className={`${clash.variable} ${general.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: PREVIEW ? boot + frenchFirst : boot }} />
+        <script dangerouslySetInnerHTML={{ __html: on("frenchAuto") ? boot + frenchFirst : boot }} />
         <StructuredData lang={lang} />
       </head>
       <body>
         <a className="skip" href="#main">{t.nav.skip}</a>
         <span className="edge-sentinel edge-sentinel--top" aria-hidden="true" />
         <span className="edge-sentinel edge-sentinel--fold" aria-hidden="true" />
-        {PREVIEW && <HomeOnly><FleetBanner lang={lang} /></HomeOnly>}
+        {on("fleetBanner") && <HomeOnly><FleetBanner lang={lang} /></HomeOnly>}
         <SiteHeader lang={lang} />
         <main id="main" tabIndex={-1}>
           {children}

@@ -5,7 +5,7 @@ import { checkout, DepositDeclined } from "@/lib/booking/checkout";
 import { MAX_PHOTOS, PHOTO_ID } from "@/lib/booking/photos";
 import { isRim, needsVin } from "@/lib/services";
 import { vinFormatOk, cleanVin } from "@/lib/book/vin";
-import { PREVIEW } from "@/lib/preview";
+import { on } from "@/lib/preview";
 import { overLimit } from "@/lib/ratelimit";
 import { business } from "@/lib/business";
 import { dict, href, type Lang } from "@/lib/i18n";
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
   // its own services and a required VIN. Their services are in the list too.
   type Extra = { car: number; services: string[]; year: string; make: string; model: string; vin: string };
   let extras: Extra[] = [];
-  if (PREVIEW && data.cars) {
+  if (on("multiCar") && data.cars) {
     try {
       const raw = typeof data.cars === "string" ? JSON.parse(data.cars) : data.cars;
       extras = (Array.isArray(raw) ? raw : []).slice(0, 2).map((c: Record<string, unknown>, i: number) => ({
