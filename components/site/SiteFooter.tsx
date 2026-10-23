@@ -1,9 +1,10 @@
-import { FacebookLogo, GoogleLogo, InstagramLogo, WhatsappLogo } from "@phosphor-icons/react/dist/ssr";
-import { business, googleReviewHref } from "@/lib/business";
+import { FacebookMark, InstagramMark, WhatsappMark } from "@/components/site/SocialMarks";
+import { GoogleReview } from "@/components/site/GoogleReview";
+import { business } from "@/lib/business";
 import { dict, href, servicesIn, type Lang } from "@/lib/i18n";
 import { Wordmark } from "./Wordmark";
 
-const SOCIAL = { instagram: InstagramLogo, facebook: FacebookLogo, whatsapp: WhatsappLogo } as const;
+const SOCIAL = { instagram: InstagramMark, facebook: FacebookMark, whatsapp: WhatsappMark } as const;
 
 export function SiteFooter({ lang }: { lang: Lang }) {
   const t = dict(lang);
@@ -22,17 +23,13 @@ export function SiteFooter({ lang }: { lang: Lang }) {
                 return (
                   <li key={s.name}>
                     <a href={s.href} rel="noopener" target="_blank" aria-label={s.name}>
-                      <Icon size={20} weight="light" aria-hidden />
+                      <Icon />
                     </a>
                   </li>
                 );
               })}
-              <li>
-                <a href={googleReviewHref()} rel="noopener" target="_blank" aria-label={t.footer.review} title={t.footer.review}>
-                  <GoogleLogo size={20} weight="light" aria-hidden />
-                </a>
-              </li>
             </ul>
+            <GoogleReview label={t.footer.review} />
           </div>
         </div>
 
@@ -70,7 +67,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
         </div>
       </div>
       <div className="page foot__base">
-        <p>© {new Date().getFullYear()} {business.name} · {business.legal.name} · NEQ {business.legal.neq} · {t.footer.rights}</p>
+        <p>© {new Date().getFullYear()} {business.name} · {business.legal.name} · {t.footer.rights}</p>
         <p className="foot__square">
           {t.footer.squareLabel}{" "}
           {t.pages.square.links.map(([, url], i) => (

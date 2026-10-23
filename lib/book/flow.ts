@@ -7,10 +7,12 @@ import { dict, href, money, price as priceText, duration, serviceIn, type Lang }
 import { business } from "@/lib/business";
 import { TIRE_CHOICES, isRim, mountPrice } from "@/lib/services";
 import { center, covered } from "@/lib/area";
-import { geocodePhoton, ADDRESS_KEY } from "@/lib/map/mount";
+import { geocodePhoton, photonSuggest, ADDRESS_KEY, type Suggestion } from "@/lib/map/mount";
+import { addressComplete, sameTown } from "@/lib/book/address-check";
 import { VISIT_KEY, type LastVisit } from "@/lib/book/calendar";
-import { depositCents, estimateOf, taxesOn } from "@/lib/booking/deposit";
-import { cleanVin, decodeVin, isValidVin, readVin } from "@/lib/book/vin";
+import { depositFor, depositOn, estimateOf, taxesOn } from "@/lib/booking/deposit";
+import { cleanVin, decodeVin, isValidVin, readVin, vinFormatOk } from "@/lib/book/vin";
+import { needsVin } from "@/lib/services";
 import { MAX_PHOTOS } from "@/lib/booking/photos";
 
 type Slot = { startAt: string; minutes: number; segments?: unknown[] };
@@ -36,6 +38,25 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
 
   /** The ticked services, in menu order. */
   const picked = () => $$<HTMLInputElement>('input[name="service"]:checked').map((i) => i.value);
+  /** More than one car (test copy only; without the picker it's always 1).
+   *  "4" means 4 or more: booked by phone. */
+  const carCount = () => Number(form.querySelector<HTMLInputElement>('[name="cars"]:checked')?.value ?? "1");
+  const extraCars = () => {
+    const n = carCount();
+    if (n < 2 || n > 3) return [];
+    return [2, 3].slice(0, n - 1).map((i) => ({
+      n: i,
+      services: $$<HTMLInputElement>(`input[name="car${i}Service"]:checked`).map((x) => x.value),
+      year: value(`car${i}Year`),
+      make: value(`car${i}Make`),
+      model: value(`car${i}Model`),
+      vin: cleanVin(value(`car${i}Vin`)),
+    }));
+  };
+  /** Every service in the visit, car 1 first: what the time and estimate count. */
+  const allSlugs = () => [...picked(), ...extraCars().flatMap((c) => c.services)];
+  /** Each line of the visit with its car (1 = the main car). */
+  const lines = () => [...picked().map((slug) => ({ slug, car: 1 })), ...extraCars().flatMap((c) => c.services.map((slug) => ({ slug, car: c.n })))];
   const travel = business.booking.travelMinutes;
   /** "from $578 · about 4 hr on site, travel included" for a set of services. */
   // Tyres mounted on the customer's rims are priced by rim size (price list).
@@ -67,14 +88,38 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   next.hidden = false;
 
   let at = 0;
-  const go = (n: number, focus = true) => {
+  /** The furthest step reached: the step bar can jump forward up to it. */
+  let furthest = 0;
+  const go = (n: number, focus = true, fromHistory = false) => {
     const dir = n < at ? "back" : "forward";
+    const was = at;
     at = Math.max(0, Math.min(LAST, n));
+    // Each step is a browser history entry: the phone's back gesture or the
+    // browser's back and forward buttons move between steps, not off the page.
+    furthest = Math.max(furthest, at);
+    // History mirrors the steps in order (0, 1, 2…): Back is always the step
+    // before, Forward the step after. Going back steps the history back, so
+    // the later steps stay "forward" until a new path is taken.
+    if (!fromHistory && at !== was) {
+      try {
+        if (at < was) history.go(at - was);
+        // Keep the router's own state alongside ours, or Next.js reloads on Back.
+        else for (let k = was + 1; k <= at; k++) history.pushState({ ...(history.state ?? {}), bookStep: k }, "");
+      } catch {}
+    }
     steps.forEach((s, i) => {
       s.hidden = i !== at;
       s.dataset.dir = dir;
     });
-    progress.forEach((p, i) => (p.dataset.state = i < at ? "done" : i === at ? "now" : "todo"));
+    progress.forEach((p, i) => {
+      p.dataset.state = i < at ? "done" : i === at ? "now" : "todo";
+      const btn = p.querySelector<HTMLButtonElement>("button");
+      if (btn) {
+        btn.disabled = i > furthest;
+        if (i === at) btn.setAttribute("aria-current", "step");
+        else btn.removeAttribute("aria-current");
+      }
+    });
     back.hidden = at === 0;
     next.hidden = at === LAST;
     // The last step is a checkout: its own back link and pay button; the side
@@ -93,9 +138,14 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
 
   // --- Validation, one step at a time ------------------------------------
   const rules: Record<number, [string, (v: string) => boolean][]> = {
-    0: [["service", () => picked().length > 0], ["rim", () => !picked().includes("tire-install") || !!rim()]],
+    0: [
+      ["service", () => picked().length > 0],
+      ["rim", () => !picked().includes("tire-install") || !!rim()],
+      ["carsMany", () => carCount() < 4],
+      ["carServices", () => extraCars().every((c) => c.services.length > 0)],
+    ],
     1: [
-      ["address", (v) => v.length > 4],
+      ["address", (v) => addressComplete(v)],
       ["postal", (v) => /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(v.trim())],
       ["parking", (v) => !!v],
       ["parkingConsent", () => !atOffice() || !!value("parkingConsent")],
@@ -106,15 +156,21 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       ["name", (v) => v.length > 1],
       ["phone", (v) => v.replace(/\D/g, "").length >= 10],
       ["email", (v) => /^\S+@\S+\.\S+$/.test(v)],
+      ["vin", (v) => (!needsVin(picked()) && !extraCars().length) || vinFormatOk(v)],
       ["make", (v) => !!v],
       ["model", (v) => !!v],
+      ["carDetails", () => extraCars().every((c) => !!c.make && !!c.model && vinFormatOk(c.vin))],
     ],
   };
   const check = (n: number) => {
     let first: HTMLElement | null = null;
     for (const [name, ok] of rules[n] ?? []) {
+      const err = form.querySelector<HTMLElement>(`[data-err="${name}"]`);
+      // A rule for a part of the form that isn't on this page (the test copy's
+      // extra cars, say) has nothing to check.
+      if (!err && !form.querySelector(`[name="${name}"]`)) continue;
       const good = ok(name === "slot" || name === "service" ? "" : value(name));
-      $(`[data-err="${name}"]`).classList.toggle("on", !good);
+      err?.classList.toggle("on", !good);
       const input = form.querySelector<HTMLInputElement>(`[name="${name}"]`);
       if (input && input.type !== "radio") input.setAttribute("aria-invalid", String(!good));
       if (!good && !first) first = input ?? $<HTMLElement>(`[data-err="${name}"]`);
@@ -143,10 +199,33 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     }
     if (check(at)) return go(at + 1);
     if (at !== 1) return;
-    if (areaState === "out") return outsideDialog?.showModal();
+    if (areaState === "out") {
+      offeredFor = checkedFor;
+      return outsideDialog?.showModal();
+    }
     if (atOffice() && !value("parkingConsent")) openOffice(true);
   });
   back.addEventListener("click", () => go(at - 1));
+  // The step bar: jump back to any step; forward only through steps that check out.
+  $$<HTMLButtonElement>("[data-progress-go]").forEach((btn) =>
+    btn.addEventListener("click", async () => {
+      const target = Number(btn.dataset.progressGo);
+      if (target <= at) return go(target);
+      if (target > furthest) return;
+      for (let n = at; n < target; n++) {
+        if (n === 1 && address.value.trim().length >= 6 && (address.value.trim() !== checkedFor || areaState === "")) await coverCheck();
+        if (!check(n)) return go(n);
+        if (n === 1 && areaState === "out") { go(1); return outsideDialog?.showModal(); }
+      }
+      go(target);
+    }),
+  );
+  // Browser back and forward between steps.
+  try { history.replaceState({ ...(history.state ?? {}), bookStep: at }, ""); } catch {}
+  addEventListener("popstate", (e) => {
+    const n = (e.state as { bookStep?: number } | null)?.bookStep;
+    if (typeof n === "number") go(Math.min(n, furthest), true, true);
+  });
   $$<HTMLButtonElement>("[data-goto]").forEach((btn) => btn.addEventListener("click", () => go(Number(btn.dataset.goto))));
   // Enter in a text field moves forward instead of submitting half a form.
   form.addEventListener("keydown", (e) => {
@@ -167,10 +246,28 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const whereDefault = sum.where.textContent;
   const whenDefault = sum.when.textContent;
   const refreshSummary = () => {
-    const list = picked().map((slug) => serviceIn(cfg.lang, slug)!);
+    // VIN: required for oil changes and brakes, optional otherwise.
+    const vinNeeded = needsVin(picked()) || extraCars().length > 0;
+    $$("[data-vin-opt]").forEach((el) => (el.hidden = vinNeeded));
+    $$("[data-vin-req]").forEach((el) => (el.hidden = !vinNeeded));
+    form.querySelector('[name="vin"]')?.toggleAttribute("required", vinNeeded);
+    // More than one car: show each extra car's services and details.
+    const cars = carCount();
+    $$<HTMLElement>("[data-car]").forEach((el) => (el.hidden = Number(el.dataset.car) > cars || cars > 3));
+    $$<HTMLElement>("[data-car-details]").forEach((el) => (el.hidden = Number(el.dataset.carDetails) > cars || cars > 3));
+    $$<HTMLElement>("[data-cars-more]").forEach((el) => (el.hidden = cars < 2 || cars > 3));
+    $$<HTMLElement>("[data-cars-tires]").forEach((el) => (el.hidden = cars < 2 || cars > 3));
+    $$<HTMLElement>("[data-cars-many]").forEach((el) => (el.hidden = cars < 4));
+    if (cars < 4) $('[data-err="carsMany"]')?.classList.remove("on");
+    const list = allSlugs().map((slug) => serviceIn(cfg.lang, slug)!);
     const label = (s: (typeof list)[number]) =>
       s.slug === "tire-install" && rim() ? `${s.name} (${t.fmt.rims[rim()!]}${runFlat() ? `, ${b.tire.runFlat.replace(/\s*\(.*\)$/, "")}` : ""})` : s.name;
-    sum.service.textContent = list.length ? list.map(label).join(" + ") : "—";
+    const extras = extraCars();
+    sum.service.textContent = !list.length
+      ? "—"
+      : extras.length
+        ? [`${b.cars.car(1)}: ${picked().map((slug) => label(serviceIn(cfg.lang, slug)!)).join(" + ") || "—"}`, ...extras.map((c) => `${b.cars.car(c.n)}: ${c.services.map((slug) => serviceIn(cfg.lang, slug)!.name).join(" + ") || "—"}`)].join(" · ")
+        : list.map(label).join(" + ");
     sum.price.textContent = list.length ? totals(list) : "";
     totalLine.textContent = list.length ? totals(list) : "";
     sum.where.textContent = value("address") || whereDefault;
@@ -282,23 +379,44 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   // "out" blocks the next step (book by phone instead); unknown never blocks.
   let areaState: "in" | "out" | "" = "";
   let checkedFor = "";
+  /** Out of the area: offer to call, text or email right away (once per
+   *  address), as soon as the visitor has finished with the field. */
+  let offeredFor = "";
+  const offerContact = () => {
+    if (areaState !== "out" || offeredFor === checkedFor) return;
+    offeredFor = checkedFor;
+    form.querySelector<HTMLDialogElement>("[data-outside-dialog]")?.showModal();
+  };
   const coverCheck = async () => {
     const q = address.value.trim();
     const mine = ++lookup;
     areaState = "";
     checkedFor = q;
     if (q.length < 6) return (cover.textContent = "");
+    // A number and a street name first: "245 rue" lands in the middle of a
+    // town and would read as "in our area".
+    if (!addressComplete(q)) {
+      cover.dataset.state = "partial";
+      return (cover.textContent = b.coverage.partial);
+    }
     cover.dataset.state = "checking";
     cover.textContent = b.coverage.checking;
     try {
       const hit = await geocodePhoton(q, { center, lang: cfg.lang });
       if (mine !== lookup) return;
       if (!hit) return (cover.textContent = "");
+      // Found the town but not the street: say so instead of "in our area".
+      if (!hit.street || !sameTown(q, hit.town)) {
+        cover.dataset.state = "partial";
+        return (cover.textContent = b.coverage.noStreet);
+      }
       const inside = covered(hit.at);
       areaState = inside ? "in" : "out";
       if (inside) $('[data-err="outside"]').classList.remove("on");
       cover.dataset.state = inside ? "in" : "out";
       cover.textContent = inside ? b.coverage.in : b.coverage.out;
+      // Picked from the suggestions or already left the field: pop up now.
+      if (!inside && document.activeElement !== address) offerContact();
     } catch {
       if (mine === lookup) cover.textContent = "";
     }
@@ -309,7 +427,79 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     clearTimeout(pause);
     pause = window.setTimeout(coverCheck, 900);
   });
+  address.addEventListener("blur", () => setTimeout(offerContact, 150));
   if (address.value) coverCheck();
+
+  // --- Address suggestions as you type (test site only, lib/preview.ts) -----
+  const list = form.querySelector<HTMLUListElement>("[data-addr-list]");
+  if (list) {
+    let hits: Suggestion[] = [];
+    let active = -1;
+    let typing = 0;
+    let ctl: AbortController | null = null;
+    const close = () => {
+      list.hidden = true;
+      address.setAttribute("aria-expanded", "false");
+      address.removeAttribute("aria-activedescendant");
+      active = -1;
+    };
+    const mark = (i: number) => {
+      active = i;
+      [...list.children].forEach((li, n) => li.setAttribute("aria-selected", String(n === i)));
+      if (i >= 0) address.setAttribute("aria-activedescendant", `addr-${i}`);
+    };
+    const choose = (s: Suggestion) => {
+      address.value = s.address;
+      const postal = form.querySelector<HTMLInputElement>('[name="postal"]');
+      if (postal && s.postal && !postal.value) postal.value = s.postal.toUpperCase();
+      close();
+      clearTimeout(pause);
+      resetConsent();
+      coverCheck();
+    };
+    const suggest = async () => {
+      const q = address.value.trim();
+      if (q.length < 4) return close();
+      ctl?.abort();
+      ctl = new AbortController();
+      try {
+        hits = await photonSuggest(q, { center, lang: cfg.lang }, ctl.signal);
+      } catch {
+        return;
+      }
+      if (!hits.length || document.activeElement !== address) return close();
+      list.replaceChildren(...hits.map((s, i) => {
+        const li = document.createElement("li");
+        li.id = `addr-${i}`;
+        li.setAttribute("role", "option");
+        li.textContent = s.label;
+        // mousedown, so the field doesn't lose focus (and close) first.
+        li.addEventListener("mousedown", (e) => { e.preventDefault(); choose(s); });
+        return li;
+      }));
+      list.hidden = false;
+      address.setAttribute("aria-expanded", "true");
+      mark(-1);
+    };
+    address.addEventListener("input", () => {
+      clearTimeout(typing);
+      typing = window.setTimeout(suggest, 250);
+    });
+    address.addEventListener("keydown", (e) => {
+      if (list.hidden) return;
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const n = hits.length;
+        mark(e.key === "ArrowDown" ? (active + 1) % n : (active - 1 + n) % n);
+      } else if (e.key === "Enter" && active >= 0) {
+        // Picks the suggestion instead of moving to the next step.
+        e.preventDefault();
+        e.stopPropagation();
+        choose(hits[active]);
+      } else if (e.key === "Escape") close();
+    });
+    address.addEventListener("blur", () => setTimeout(close, 120));
+  }
 
   // --- Office or business parking: the property's permission ---------------
   const consentField = form.querySelector<HTMLInputElement>('[name="parkingConsent"]')!;
@@ -394,7 +584,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   }
 
   async function loadSlots(force = false) {
-    const svc = picked().join(",");
+    const svc = allSlugs().join(",");
     if (!svc || (slotsFor === svc && !force)) return;
     slotsFor = svc;
     status.textContent = b.when.loading;
@@ -536,16 +726,18 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
 
   // --- Confirm ---------------------------------------------------------------
   function fillReview() {
-    const list = picked().map((slug) => serviceIn(cfg.lang, slug)!);
+    const list = allSlugs().map((slug) => serviceIn(cfg.lang, slug)!);
+    const carOf = lines().map((l) => l.car);
+    const multi = extraCars().length > 0;
     const car = [value("year"), value("make"), value("model")].filter(Boolean).join(" ");
     // The receipt: appointment first, then the services, car and contact.
     const mins = list.reduce((n, s) => n + s.minutes, 0) + travel;
     const at = value("startAt");
     const day = at ? new Intl.DateTimeFormat(t.locale, { timeZone: TZ, weekday: "long", month: "long", day: "numeric" }).format(new Date(at)) : "";
     $("[data-co-items]").replaceChildren(
-      ...list.map((s) => {
+      ...list.map((s, i) => {
         const li = document.createElement("li");
-        const name = Object.assign(document.createElement("span"), { textContent: s.name + (s.slug === "tire-install" && rim() ? ` · ${t.fmt.rims[rim()!]}${runFlat() ? ` · ${b.tire.runFlatShort}` : ""}` : "") });
+        const name = Object.assign(document.createElement("span"), { textContent: (multi ? `${b.cars.car(carOf[i])} · ` : "") + s.name + (s.slug === "tire-install" && rim() ? ` · ${t.fmt.rims[rim()!]}${runFlat() ? ` · ${b.tire.runFlatShort}` : ""}` : "") });
         const cost = Object.assign(document.createElement("span"), {
           className: "num",
           textContent: s.slug === "tire-install" && rim() ? money(cfg.lang, priceOf(s)) : priceText(cfg.lang, s),
@@ -558,25 +750,30 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       list.length ? b.confirm.duration(duration(cfg.lang, mins)) : "",
       `${[value("address"), value("postal").toUpperCase()].filter(Boolean).join(", ")} · ${value("parking")}`,
       at ? `${day.charAt(0).toUpperCase()}${day.slice(1)} · ${clock(at)}` : "",
-      car + (value("vin") ? ` · ${value("vin").toUpperCase()}` : ""),
+      [
+        car + (value("vin") ? ` · ${value("vin").toUpperCase()}` : ""),
+        ...extraCars().map((c) => `${b.cars.car(c.n)}: ${[c.year, c.make, c.model].filter(Boolean).join(" ")}${c.vin ? ` · ${c.vin}` : ""}`),
+      ].join(" / "),
       [value("name"), value("phone"), value("email")].filter(Boolean).join(" · "),
     ];
     rows.forEach((v, i) => ($(`[data-review-v="${i}"]`).textContent = v));
     // The deposit, by the same rule the server charges with.
-    const pct = business.booking.depositPercent;
     try { paymentRequest?.update({ total: total() }); } catch {}
-    if (pct && form.querySelector("[data-pay-amount]")) {
-      const cents = depositCents(picked(), pct, rim(), runFlat());
+    if (depositOn() && form.querySelector("[data-pay-amount]")) {
+      const cents = depositFor(picked(), rim(), runFlat());
       const due = money(cfg.lang, cents / 100, true);
       $("[data-pay-amount]").textContent = due;
       $("[data-pay-deposit]").textContent = due;
       $("[data-co-due-mini]").textContent = b.confirm.dueMini(due);
-      const pre = estimateOf(picked(), rim(), runFlat());
+      const pre = estimateOf(allSlugs(), rim(), runFlat());
       const tx = taxesOn(pre);
       $("[data-pay-estimate]").textContent = money(cfg.lang, pre, true);
-      $("[data-pay-gst]").textContent = money(cfg.lang, tx.gst, true);
-      $("[data-pay-qst]").textContent = money(cfg.lang, tx.qst, true);
-      $("[data-pay-with-tax]").textContent = money(cfg.lang, tx.total, true);
+      // Tax rows exist only under the archived percent rule.
+      if (form.querySelector("[data-pay-gst]")) {
+        $("[data-pay-gst]").textContent = money(cfg.lang, tx.gst, true);
+        $("[data-pay-qst]").textContent = money(cfg.lang, tx.qst, true);
+        $("[data-pay-with-tax]").textContent = money(cfg.lang, tx.total, true);
+      }
       // The button says what happens: pay, then send.
       if (cfg.square.appId && cents > 0) submit.textContent = b.confirm.payAndSend(due);
     }
@@ -589,7 +786,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const formId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}${Math.random().toString(16).slice(2)}`;
   let attempt: { sig: string; id: string; token?: string } | null = null;
   const attemptFor = () => {
-    const sig = JSON.stringify([picked(), value("startAt"), value("rim"), runFlat(), value("email").toLowerCase()]);
+    const sig = JSON.stringify([allSlugs(), extraCars(), value("startAt"), value("rim"), runFlat(), value("email").toLowerCase()]);
     if (!attempt || attempt.sig !== sig) {
       let h = 0;
       for (const c of sig) h = (h * 31 + c.charCodeAt(0)) | 0;
@@ -606,8 +803,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   type Tokenizer = { tokenize(): Promise<{ status: string; token?: string }> };
   let card: Tokenizer | null = null;
   let paymentRequest: { update(o: unknown): void } | null = null;
-  const pct = business.booking.depositPercent;
-  const depositNow = () => (pct ? depositCents(picked(), pct, rim(), runFlat()) : 0);
+  const depositNow = () => (depositOn() ? depositFor(picked(), rim(), runFlat()) : 0);
   const total = () => ({ amount: (depositNow() / 100).toFixed(2), label: b.confirm.card });
   /** The booking terms must be accepted before any payment (card or wallet). */
   const termsOk = () => {
@@ -630,7 +826,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       console.error("[wallet]", e);
     }
   };
-  if (pct && cfg.square.appId && cfg.square.locationId) {
+  if (depositOn() && cfg.square.appId && cfg.square.locationId) {
     const box = $("[data-card]");
     box.hidden = false;
     const s = document.createElement("script");
@@ -682,10 +878,10 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   const vinStatus = $("[data-vin-status]");
   $("[data-vin-scan]").hidden = false;
   /** Fill year, make and model from a good VIN, without overwriting what's typed. */
-  const fillFromVin = async (vin: string) => {
+  const fillFromVin = async (vin: string, prefix = "") => {
     const car = await decodeVin(vin);
     const set = (name: string, v?: string) => {
-      const f = form.querySelector<HTMLInputElement>(`[name="${name}"]`);
+      const f = form.querySelector<HTMLInputElement>(`[name="${prefix}${prefix ? name[0].toUpperCase() + name.slice(1) : name}"]`);
       if (f && v && !f.value.trim()) { f.value = v; f.dispatchEvent(new Event("input", { bubbles: true })); }
     };
     set("year", car.year);
@@ -693,28 +889,50 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     set("model", car.model);
     return [car.year, car.make, car.model].filter(Boolean).join(" ");
   };
-  $<HTMLInputElement>("[data-vin-photo]").addEventListener("change", async (e) => {
-    const input = e.currentTarget as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = "";
-    if (!file) return;
-    vinStatus.textContent = b.you.vinReading;
-    try {
-      const got = await readVin(file);
-      if (!got) { vinStatus.textContent = b.you.vinNone; return; }
-      vinInput.value = got.vin;
-      vinInput.dispatchEvent(new Event("input", { bubbles: true }));
-      let msg = got.checked ? b.you.vinRead(got.vin) : b.you.vinUnsure(got.vin);
-      if (got.checked) {
-        const car = await fillFromVin(got.vin);
-        if (car) msg += ` ${b.you.vinDecoded(car)}`;
+  /** A VIN photo for any car: read it, put it in that car's VIN field, fill
+   *  the year, make and model. prefix "" is car 1, "car2"/"car3" the others. */
+  const scanVin = (photo: HTMLInputElement, field: HTMLInputElement, status: HTMLElement, prefix = "") =>
+    photo.addEventListener("change", async () => {
+      const file = photo.files?.[0];
+      photo.value = "";
+      if (!file) return;
+      status.textContent = b.you.vinReading;
+      try {
+        const got = await readVin(file);
+        if (!got) { status.textContent = b.you.vinNone; return; }
+        field.value = got.vin;
+        field.dispatchEvent(new Event("input", { bubbles: true }));
+        let msg = got.checked ? b.you.vinRead(got.vin) : b.you.vinUnsure(got.vin);
+        if (got.checked) {
+          const car = await fillFromVin(got.vin, prefix);
+          if (car) msg += ` ${b.you.vinDecoded(car)}`;
+        }
+        status.textContent = msg;
+      } catch (err) {
+        console.error("[vin]", err);
+        status.textContent = b.you.vinNone;
       }
-      vinStatus.textContent = msg;
-    } catch (err) {
-      console.error("[vin]", err);
-      vinStatus.textContent = b.you.vinNone;
-    }
-  });
+    });
+  scanVin($<HTMLInputElement>("[data-vin-photo]"), vinInput, vinStatus);
+  for (const n of [2, 3]) {
+    const box = form.querySelector<HTMLElement>(`[data-car-details="${n}"]`);
+    const photo = box?.querySelector<HTMLInputElement>("[data-car-vin-photo]");
+    const field = form.querySelector<HTMLInputElement>(`[name="car${n}Vin"]`);
+    const status = box?.querySelector<HTMLElement>("[data-car-vin-status]");
+    if (photo && field && status) scanVin(photo, field, status, `car${n}`);
+  }
+  // Cars 2 and 3 (test copy): a valid VIN fills that car's year, make and model.
+  for (const n of [2, 3]) {
+    const input = form.querySelector<HTMLInputElement>(`[name="car${n}Vin"]`);
+    let done = "";
+    input?.addEventListener("input", () => {
+      const v = cleanVin(input.value);
+      if (v !== done && isValidVin(v)) {
+        done = v;
+        fillFromVin(v, `car${n}`).catch(() => {});
+      }
+    });
+  }
   // Typed or pasted: decode once it's a valid VIN.
   let decodedVin = "";
   vinInput.addEventListener("input", async () => {
@@ -825,12 +1043,14 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       for (let i = 0; uploading > 0 && i < 40; i++) await new Promise((r) => setTimeout(r, 500));
       const body: Record<string, unknown> = {};
       new FormData(form).forEach((v, k) => typeof v === "string" && k !== "service" && k !== "remember" && (body[k] = v));
-      body.services = picked();
+      body.services = allSlugs();
+      if (extraCars().length) body.cars = JSON.stringify(extraCars().map(({ n, ...c }) => ({ car: n, ...c })));
+      for (const k of Object.keys(body)) if (/^car\d/.test(k)) delete body[k];
       body.notifyEmail = !!form.querySelector<HTMLInputElement>('[name="notifyEmail"]')?.checked;
       body.notifyText = !!form.querySelector<HTMLInputElement>('[name="notifyText"]')?.checked;
       const a = attemptFor();
       body.attempt = a.id;
-      if (pct && cfg.square.appId && depositNow() > 0) {
+      if (cfg.square.appId && depositNow() > 0) {
         if (!card && !a.token) {
           alertText.textContent = b.confirm.cardMissing;
           alert.classList.add("on");
@@ -858,7 +1078,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
         } catch {}
         // For "Add to calendar" on the next page (this tab only).
         try {
-          const list = picked().map((slug) => serviceIn(cfg.lang, slug)!);
+          const list = allSlugs().map((slug) => serviceIn(cfg.lang, slug)!);
           const visit: LastVisit = {
             ref: String(data.ref),
             startAt: value("startAt"),

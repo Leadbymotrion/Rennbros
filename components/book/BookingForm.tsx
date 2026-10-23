@@ -1,10 +1,12 @@
 "use client";
 
 import { Fragment, useEffect, useRef } from "react";
-import { ArrowLeft, ArrowRight, CalendarBlank, Camera, ChatText, EnvelopeSimple, Image as ImageIcon, CaretDown, CaretLeft, CaretRight, Check, LockSimple, MapPin, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, CalendarBlank, Camera, ChatText, EnvelopeSimple, Phone, Image as ImageIcon, CaretDown, CaretLeft, CaretRight, Check, LockSimple, MapPin, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
 import { business } from "@/lib/business";
 import { dict, href, money, price, duration, servicesIn, type Lang } from "@/lib/i18n";
 import { MOUNT } from "@/lib/services";
+import { depositOn } from "@/lib/booking/deposit";
+import { on } from "@/lib/preview";
 import { mountFlow } from "@/lib/book/flow";
 import { Wordmark } from "@/components/site/Wordmark";
 
@@ -29,6 +31,9 @@ export function BookingForm({ lang }: { lang: Lang }) {
   const form = useRef<HTMLFormElement>(null);
   const started = useRef(false);
   const cancel = business.booking.cancellationHours;
+  // The deposit rule (lib/business.ts): flat $50 now, the 20% rule archived.
+  const deposit = depositOn();
+  const flatDeposit = business.booking.depositMode === "flat";
   const clock = (h: number) => new Intl.DateTimeFormat(t.locale, { timeZone: "UTC", hour: "numeric", minute: "2-digit" }).format(new Date(Date.UTC(2026, 0, 5, h)));
 
   useEffect(() => {
@@ -58,8 +63,12 @@ export function BookingForm({ lang }: { lang: Lang }) {
       <div className="book__grid">
         <form ref={form} className="flow" method="post" action="/api/book">
           <input type="hidden" name="lang" value={lang} />
-          <ol className="progress" aria-hidden="true">
-            {b.steps.map((s, i) => <li key={s} data-progress={i}><span className="num">{i + 1}</span><em>{s}</em></li>)}
+          <ol className="progress" aria-label={b.stepsLabel}>
+            {b.steps.map((s, i) => (
+              <li key={s} data-progress={i}>
+                <button type="button" className="progress__btn" data-progress-go={i}><span className="num">{i + 1}</span><em>{s}</em></button>
+              </li>
+            ))}
           </ol>
           <p className="sr-only" aria-live="polite" data-step-announce />
           <p className="remembered" data-remembered aria-live="polite" hidden>{b.remember.welcome} <button type="button" className="link" data-forget>{b.remember.forget}</button></p>
@@ -67,6 +76,22 @@ export function BookingForm({ lang }: { lang: Lang }) {
           {/* 1 · Service */}
           <fieldset className="step" data-step="0">
             <legend className="step__title d3" tabIndex={-1}>{b.titles[0]}</legend>
+            {on("multiCar") && (
+              /* How many cars first (test copy only, lib/preview.ts): with 2 or 3, every list goes compact. */
+              <div className="cars" data-cars>
+                <div className="cars__pick">
+                  <span id="cars-label" className="cars__label">{b.cars.legend}</span>
+                  <div className="pills" role="radiogroup" aria-labelledby="cars-label">
+                    {["1", "2", "3", "4"].map((n) => (
+                      <label key={n} className="pill"><input type="radio" name="cars" value={n} defaultChecked={n === "1"} /><span>{n === "4" ? b.cars.many : n}</span></label>
+                    ))}
+                  </div>
+                </div>
+                <span className="help">{b.cars.help}</span>
+                <p className="cars__many" data-cars-many hidden>{b.cars.manyNote} <a href={`tel:${business.phone.tel}`}>{business.phone.display}</a></p>
+                <p className="err" data-err="carsMany">{b.cars.errMany}</p>
+              </div>
+            )}
             <p className="help step__help">{b.service.help}</p>
             <div className="choices">
               {services.map((s) => (
@@ -99,6 +124,22 @@ export function BookingForm({ lang }: { lang: Lang }) {
                 </Fragment>
               ))}
             </div>
+            {on("multiCar") && (
+              <>
+                {[2, 3].map((n) => (
+                  <fieldset key={n} className="car" data-car={n} hidden>
+                    <legend className="car__title">{b.cars.servicesFor(n)}</legend>
+                    <div className="car__list">
+                      {services.filter((s) => s.slug !== "tire-install").map((s) => (
+                        <label key={s.slug} className="pill"><input type="checkbox" name={`car${n}Service`} value={s.slug} /><span>{s.name}</span></label>
+                      ))}
+                    </div>
+                  </fieldset>
+                ))}
+                <p className="help cars__tires" data-cars-tires hidden>{b.cars.tiresNote}</p>
+                <p className="err" data-err="carServices">{b.cars.errServices}</p>
+              </>
+            )}
             <p className="total" data-total aria-live="polite" />
             <p className="price-notice">{b.confirm.priceNotice}</p>
             <p className="err" data-err="service">{b.invalid.service}</p>
@@ -109,7 +150,14 @@ export function BookingForm({ lang }: { lang: Lang }) {
             <legend className="step__title d3" tabIndex={-1}>{b.titles[1]}</legend>
             <label className="field">
               <span>{b.where.address}</span>
-              <input className="input" name="address" type="text" autoComplete="street-address" required />
+              {on("addressSuggest") ? (
+                <span className="addr">
+                  <input className="input" name="address" type="text" autoComplete="street-address" required role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="addr-list" />
+                  <ul className="addr__list" id="addr-list" role="listbox" aria-label={b.coverage.suggest} data-addr-list hidden />
+                </span>
+              ) : (
+                <input className="input" name="address" type="text" autoComplete="street-address" required />
+              )}
               <span className="help">{b.where.addressHelp}</span>
               <span className="cover" data-cover aria-live="polite" />
             </label>
@@ -162,12 +210,13 @@ export function BookingForm({ lang }: { lang: Lang }) {
                 <button type="button" className="notice__x" data-outside-close aria-label={b.office.close}>×</button>
               </div>
               <p>{b.outside.body}</p>
-              <p className="notice__phone num"><a className="link" href={`tel:${business.phone.tel}`}>{business.phone.display}</a></p>
+              <p className="notice__phone num"><a className="link" href={`tel:${business.phone.tel}`}>{business.phone.display}</a> · <a className="link" href={`mailto:${business.email}`}>{business.email}</a></p>
               <div className="notice__actions">
+                <a className="btn btn--red" href={`tel:${business.phone.tel}`}><Phone size={16} weight="bold" aria-hidden />{b.outside.call}</a>
                 <a className="btn btn--ghost" href={`sms:${business.phone.tel}`}><ChatText size={16} weight="bold" aria-hidden />{b.outside.text}</a>
-                <a className="btn btn--ghost" href={`tel:${business.phone.tel}`}>{b.outside.call}</a>
-                <button type="button" className="btn btn--red" data-outside-close data-outside-change>{b.outside.change}</button>
+                <a className="btn btn--ghost" href={`mailto:${business.email}?subject=${encodeURIComponent(b.outside.emailSubject)}`}><EnvelopeSimple size={16} weight="bold" aria-hidden />{b.outside.email}</a>
               </div>
+              <button type="button" className="link notice__change" data-outside-close data-outside-change>{b.outside.change}</button>
             </dialog>
           </fieldset>
 
@@ -225,10 +274,11 @@ export function BookingForm({ lang }: { lang: Lang }) {
               <p className="err" data-err="email">{b.invalid.email}</p>
             </div>
             <label className="field">
-              <span>{b.you.vin} <em className="opt">({b.you.optional})</em></span>
+              <span>{b.you.vin} <em className="opt" data-vin-opt>({b.you.optional})</em><em className="opt" data-vin-req hidden>({b.you.vinRequired})</em></span>
               <input className="input" name="vin" maxLength={17} autoCapitalize="characters" spellCheck={false} />
               <span className="help">{b.you.vinHelp}</span>
             </label>
+            <p className="err" data-err="vin">{b.invalid.vin}</p>
             <div className="scan" data-vin-scan hidden>
               <label className="btn btn--ghost btn--sm scan__btn">
                 <Camera size={18} weight="light" aria-hidden />
@@ -244,6 +294,36 @@ export function BookingForm({ lang }: { lang: Lang }) {
               <p className="err" data-err="make">{b.invalid.make}</p>
               <p className="err" data-err="model">{b.invalid.model}</p>
             </div>
+            {on("multiCar") && (
+              <div className="cars-more" data-cars-more hidden>
+                <h3 className="cars-more__title">{b.cars.detailsTitle}</h3>
+                <p className="help">{b.cars.detailsHelp}</p>
+                {[2, 3].map((n) => (
+                  <fieldset key={n} className="car car--details" data-car-details={n} hidden>
+                    <legend className="car__title">{b.cars.car(n)}</legend>
+                    <label className="field">
+                      <span>{b.you.vin} <em className="opt">({b.you.vinRequired})</em></span>
+                      <input className="input" name={`car${n}Vin`} maxLength={17} autoCapitalize="characters" spellCheck={false} />
+                      <span className="help">{b.cars.vinFills}</span>
+                    </label>
+                    <div className="scan">
+                      <label className="btn btn--ghost btn--sm scan__btn">
+                        <Camera size={18} weight="light" aria-hidden />
+                        {b.you.vinScan}
+                        <input className="sr-only" type="file" accept="image/*" data-car-vin-photo />
+                      </label>
+                      <span className="help scan__status" data-car-vin-status aria-live="polite" />
+                    </div>
+                    <div className="grid3">
+                      <label className="field"><span>{b.you.year} <em className="opt">({b.you.optional})</em></span><input className="input" name={`car${n}Year`} inputMode="numeric" maxLength={4} /></label>
+                      <label className="field"><span>{b.you.make}</span><input className="input" name={`car${n}Make`} /></label>
+                      <label className="field"><span>{b.you.model}</span><input className="input" name={`car${n}Model`} /></label>
+                    </div>
+                  </fieldset>
+                ))}
+                <p className="err" data-err="carDetails">{b.cars.errDetails}</p>
+              </div>
+            )}
             <label className="field">
               <span>{b.you.notes} <em className="opt">({b.you.optional})</em></span>
               <textarea className="input" name="notes" rows={3} />
@@ -305,25 +385,30 @@ export function BookingForm({ lang }: { lang: Lang }) {
                   </fieldset>
                   <dl className="co__totals">
                     <div><dt>{b.confirm.payEstimate}</dt><dd className="num" data-pay-estimate /></div>
-                    <div><dt>{b.confirm.payGst(pct(business.tax.gst))}</dt><dd className="num" data-pay-gst /></div>
-                    <div><dt>{b.confirm.payQst(pct(business.tax.qst))}</dt><dd className="num" data-pay-qst /></div>
-                    <div><dt>{b.confirm.payWithTax}</dt><dd className="num" data-pay-with-tax /></div>
-                    {business.booking.depositPercent ? (
+                    {flatDeposit ? null : (
+                      <>
+                        <div><dt>{b.confirm.payGst(pct(business.tax.gst))}</dt><dd className="num" data-pay-gst /></div>
+                        <div><dt>{b.confirm.payQst(pct(business.tax.qst))}</dt><dd className="num" data-pay-qst /></div>
+                        <div><dt>{b.confirm.payWithTax}</dt><dd className="num" data-pay-with-tax /></div>
+                      </>
+                    )}
+                    {deposit ? (
                       <>
                         <div className="co__due"><dt>{b.confirm.payTitle}</dt><dd className="num" data-pay-deposit /></div>
-                        <div className="co__later"><dt>{b.confirm.payLater}</dt><dd>{b.confirm.payLaterValue}</dd></div>
+                        {flatDeposit ? null : <div className="co__later"><dt>{b.confirm.payLater}</dt><dd>{b.confirm.payLaterValue}</dd></div>}
                       </>
                     ) : null}
                   </dl>
+                  {deposit && flatDeposit ? <p className="co__note">{b.confirm.payLaterFlat}</p> : null}
                 </div>
               </section>
 
               <section className="co__pay" aria-labelledby="pay-title" data-deposit>
                 <header className="co__pay-head">
-                  <h3 className="co__pay-title" id="pay-title">{business.booking.depositPercent ? b.confirm.card : b.confirm.sendTitle}</h3>
-                  {business.booking.depositPercent ? <p className="co__pay-amount num" data-pay-amount aria-live="polite" /> : null}
+                  <h3 className="co__pay-title" id="pay-title">{deposit ? b.confirm.card : b.confirm.sendTitle}</h3>
+                  {deposit ? <p className="co__pay-amount num" data-pay-amount aria-live="polite" /> : null}
                 </header>
-                {business.booking.depositPercent ? <p className="co__pay-hint">{b.confirm.payHint(business.booking.depositPercent)}</p> : <p className="co__pay-hint">{b.confirm.depositUnset}</p>}
+                <p className="co__pay-hint">{!deposit ? b.confirm.depositUnset : flatDeposit ? b.confirm.payHintFlat : b.confirm.payHint(business.booking.depositPercent ?? 0)}</p>
                 <div className="card co__methods" data-card hidden>
                   <div className="wallets" data-wallets hidden>
                     <button type="button" id="apple-pay" className="wallet wallet--apple" aria-label="Apple Pay" hidden />

@@ -37,12 +37,13 @@ for (const [name, width, height, dpr, touch, ua] of devices) {
     const page = await browser.newPage();
     if (ua) await page.setUserAgent(ua);
     await page.setViewport({ width, height, deviceScaleFactor: dpr > 2 ? 2 : dpr, isMobile: touch && width < 1100, hasTouch: touch });
-    await page.goto(BASE + path, { waitUntil: "networkidle2" });
+    // One retry: a dropped connection isn't a layout problem.
+    await page.goto(BASE + path, { waitUntil: "networkidle2" }).catch(() => page.goto(BASE + path, { waitUntil: "networkidle2" }));
     await page.evaluate(() => document.fonts.ready);
     const r = await page.evaluate(() => {
       const iw = innerWidth;
       const over = [...document.querySelectorAll("body *")]
-        .filter((e) => !e.closest(".voices__row, .rv__viewport, .mq__window, .bar, .menu, .smap__map, .edge") && e.getBoundingClientRect().right > iw + 1)
+        .filter((e) => !e.closest(".voices__row, .rv__viewport, .mq__window, .fleet__window, .bar, .menu, .smap__map, .edge") && e.getBoundingClientRect().right > iw + 1)
         .slice(0, 3).map((e) => `${e.tagName}.${String(e.className).split(" ")[0]}`);
       // Header: nothing may overlap, and the row may not wrap.
       const head = document.querySelector(".head__in");

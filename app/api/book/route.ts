@@ -1,9 +1,11 @@
 import { provider, earliest, timing, schedule, pickServices } from "@/lib/booking/config";
 import { toSquareAddress } from "@/lib/booking/address";
-import { depositCents, estimateOf, estimateWithTax } from "@/lib/booking/deposit";
+import { depositFor, estimateOf, estimateWithTax } from "@/lib/booking/deposit";
 import { checkout, DepositDeclined } from "@/lib/booking/checkout";
 import { MAX_PHOTOS, PHOTO_ID } from "@/lib/booking/photos";
-import { isRim } from "@/lib/services";
+import { isRim, needsVin } from "@/lib/services";
+import { vinFormatOk, cleanVin } from "@/lib/book/vin";
+import { on } from "@/lib/preview";
 import { overLimit } from "@/lib/ratelimit";
 import { business } from "@/lib/business";
 import { dict, href, type Lang } from "@/lib/i18n";
@@ -56,6 +58,35 @@ export async function POST(request: Request) {
   const missing = ["address", "postal", "parking", "name", "phone", "email", "make", "model"].filter((k) => !s(k));
   if (!slugs || missing.length) return fail(request, lang, "missing_fields", 400, isJSON, { missing });
   if (!/^\S+@\S+\.\S+$/.test(s("email"))) return fail(request, lang, "email", 400, isJSON);
+  // More than one car on the visit (test copy only): cars 2 and 3, each with
+  // its own services and a required VIN. Their services are in the list too.
+  type Extra = { car: number; services: string[]; year: string; make: string; model: string; vin: string };
+  let extras: Extra[] = [];
+  if (on("multiCar") && data.cars) {
+    try {
+      const raw = typeof data.cars === "string" ? JSON.parse(data.cars) : data.cars;
+      extras = (Array.isArray(raw) ? raw : []).slice(0, 2).map((c: Record<string, unknown>, i: number) => ({
+        car: i + 2,
+        services: Array.isArray(c.services) ? c.services.map(String) : [],
+        year: String(c.year ?? "").trim().slice(0, 4),
+        make: String(c.make ?? "").trim().slice(0, 40),
+        model: String(c.model ?? "").trim().slice(0, 40),
+        vin: cleanVin(String(c.vin ?? "")),
+      }));
+    } catch {
+      return fail(request, lang, "bad_request", 400, isJSON);
+    }
+    if (extras.some((c) => !c.services.length || !c.make || !c.model || !vinFormatOk(c.vin))) return fail(request, lang, "cars", 400, isJSON);
+  }
+  // Car 1's own services: the list less each extra car's.
+  const car1 = [...slugs];
+  for (const x of extras.flatMap((c) => c.services)) {
+    const i = car1.indexOf(x);
+    if (i < 0) return fail(request, lang, "cars", 400, isJSON);
+    car1.splice(i, 1);
+  }
+  // Oil changes and brakes (or any visit with several cars): the VIN is required.
+  if ((needsVin(car1) || extras.length > 0) && !vinFormatOk(s("vin"))) return fail(request, lang, "vin", 400, isJSON);
   // Office or business lot: only with the customer's consent to the disclosure
   // (they have, or will get, the property's permission).
   const office = (["en", "fr"] as const).some((l) => dict(l).book.where.parkingOptions.at(-1) === s("parking"));
@@ -104,19 +135,24 @@ export async function POST(request: Request) {
     `Parking: ${s("parking")}`,
     office && `Office/business lot: customer confirmed they have, or will get, the property's permission (consent and disclosure ${s("parkingConsent").slice(9) || "accepted"}).`,
     `Contact: ${s("phone")} · ${s("email")}`,
-    `Accepted booking terms v1.0 and warranty (${lang === "fr" ? "French" : "English"} version) at ${new Date().toISOString()}`,
+    `Accepted booking terms v1.2 and warranty (${lang === "fr" ? "French" : "English"} version) at ${new Date().toISOString()}`,
     `Updates by: ${notify.email && notify.text ? "email and text" : notify.email ? "email only (no texts)" : "text only (no emails)"}`,
     `Vehicle: ${[s("year"), s("make"), s("model")].filter(Boolean).join(" ")}`,
     s("vin") && `VIN: ${s("vin")}`,
+    extras.length > 0 && `Car 1 services: ${car1.join(", ")}`,
+    ...extras.map((c) => `Car ${c.car}: ${[c.year, c.make, c.model].filter(Boolean).join(" ")} · VIN ${c.vin} · services: ${c.services.join(", ")}`),
     lang === "fr" && "Language: French — reply in French",
     s("notes") && `Notes: ${s("notes")}`,
     photoLinks.length > 0 && `Photos:\n${photoLinks.join("\n")}`,
   ].filter(Boolean).join("\n");
 
   // The deposit: recomputed here from the services, never taken from the browser.
-  const pct = business.booking.depositPercent;
+  const flat = business.booking.depositMode === "flat";
   // Preview mode (no Square keys) books nothing real, so it takes no deposit.
-  const amountCents = p.live ? depositCents(slugs, pct, rim, runFlat) : 0;
+  const amountCents = p.live ? depositFor(slugs, rim, runFlat) : 0;
+  const depositLine = flat
+    ? `\nDeposit: flat $${(amountCents / 100).toFixed(2)}, no tax. Final bill: GST and QST on the full price, then subtract the deposit.`
+    : ` · deposit ${business.booking.depositPercent}% of that`;
   if (amountCents > 0 && !s("sourceId")) return fail(request, lang, "card_required", 400, isJSON);
   // One id per booking attempt; a resend of the same attempt can't charge or book twice.
   const attempt = /^[\w-]{8,64}$/.test(s("attempt")) ? s("attempt") : crypto.randomUUID();
@@ -132,7 +168,7 @@ export async function POST(request: Request) {
         customer: { givenName, familyName: rest.join(" ") || undefined, email: s("email"), phone: s("phone"), notify },
         address: s("address"),
         place: toSquareAddress(s("address"), s("postal")),
-        note: amountCents > 0 ? `${note}\nEstimate before tax: $${estimate.toFixed(2)} · with GST and QST: $${estimateWithTax(slugs, rim, runFlat).toFixed(2)} · deposit ${pct}% of that` : note,
+        note: amountCents > 0 ? `${note}\nEstimate before tax: $${estimate.toFixed(2)} · with GST and QST: $${estimateWithTax(slugs, rim, runFlat).toFixed(2)}${depositLine}` : note,
         customerNote: s("notes") || undefined,
         vehicle: { year: s("year") || undefined, make: s("make"), model: s("model"), vin: s("vin") || undefined },
         lang,
@@ -143,7 +179,7 @@ export async function POST(request: Request) {
             sourceId: s("sourceId"),
             verificationToken: s("verificationToken") || undefined,
             buyerEmail: s("email"),
-            note: `Deposit ${pct}% · ${slugs.join(", ")} · ${s("name")} · ${slot.startAt.slice(0, 10)}`,
+            note: `Deposit ${flat ? "flat" : `${business.booking.depositPercent}%`} · ${slugs.join(", ")} · ${s("name")} · ${slot.startAt.slice(0, 10)}`,
           }
         : null,
     );

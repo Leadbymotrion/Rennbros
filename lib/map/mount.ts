@@ -106,27 +106,42 @@ async function libre(box: HTMLElement, cfg: Config): Promise<Api> {
   // The package is CommonJS in some builds and ESM in others.
   const maplibregl = ((mod as any).default ?? mod) as typeof import("maplibre-gl");
   maplibregl.setWorkerUrl(libreWorker);
+  // Touch screens (phones, iPads): one finger scrolls the page, two fingers
+  // move, pinch-zoom and turn the map. Mouse: the wheel zooms right away.
+  const touch = matchMedia("(pointer: coarse)").matches;
+  const [[w, s], [e, n]] = bounds(cfg.coverage);
+  const padX = (e - w) * 0.8, padY = (n - s) * 0.8;
   const map = new maplibregl.Map({
     container: box,
     style: "https://tiles.openfreemap.org/styles/positron",
     bounds: bounds(cfg.coverage),
     fitBoundsOptions: { padding: 36 },
     attributionControl: { compact: true },
-    cooperativeGestures: true,
-    locale: {
-      "CooperativeGesturesHandler.WindowsHelpText": cfg.gestures[0],
-      "CooperativeGesturesHandler.MacHelpText": cfg.gestures[0].replace("Ctrl", "⌘"),
-      "CooperativeGesturesHandler.MobileHelpText": cfg.gestures[1],
-    },
+    cooperativeGestures: touch,
+    locale: { "CooperativeGesturesHandler.MobileHelpText": cfg.gestures[1] },
+    // Two-finger twist turns the map on touch; the mouse doesn't rotate.
     dragRotate: false,
     pitchWithRotate: false,
     touchPitch: false,
+    // Stay on the region: no drifting off to the ocean or the whole planet.
+    maxBounds: [[w - padX, s - padY], [e + padX, n + padY]],
+    minZoom: 8,
+    maxZoom: 18,
+    renderWorldCopies: false,
     // 3x phone screens draw at 2x: a third less work for a slow phone, and
     // the difference can't be seen at that density.
     pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
     fadeDuration: 0,
   });
-  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+  // Mouse: + and − buttons. Touch: pinch does that, so only the compass,
+  // which appears once the map is turned and points it north again.
+  map.addControl(new maplibregl.NavigationControl({ showZoom: !touch, showCompass: touch, visualizePitch: false }), "bottom-right");
+  if (touch) {
+    const compass = box.querySelector<HTMLElement>(".maplibregl-ctrl-compass")?.parentElement;
+    const sync = () => compass && (compass.hidden = Math.abs(map.getBearing()) < 1);
+    map.on("rotate", sync);
+    sync();
+  }
   // The stylesheet arrives with the module; size the canvas to the frame
   // once it has, and whenever the frame changes.
   new ResizeObserver(() => map.resize()).observe(box);
@@ -160,6 +175,17 @@ async function libre(box: HTMLElement, cfg: Config): Promise<Api> {
     el.addEventListener("click", () => box.closest(".smap")!.dispatchEvent(new CustomEvent("smap:town", { detail: t.key })));
     new maplibregl.Marker({ element: el }).setLngLat(t.at).addTo(map);
   }
+
+  // Small maps (phones): the town dots crowd each other and the town names
+  // when zoomed out, so they appear once the map is zoomed in a little.
+  const towns = () => box.classList.toggle("towns-off", box.clientWidth < 560 && map.getZoom() < 10.4);
+  map.on("zoom", towns);
+  new ResizeObserver(towns).observe(box);
+  towns();
+  // The map credits start folded into the small "i" button.
+  const attrib = box.querySelector(".maplibregl-ctrl-attrib");
+  attrib?.classList.remove("maplibregl-compact-show");
+  attrib?.removeAttribute("open");
 
   // Ready once the tiles are actually drawn (or after a few seconds regardless).
   await Promise.race([new Promise<void>((res) => map.once("idle", () => res())), new Promise((res) => setTimeout(res, 6000))]);
@@ -200,7 +226,7 @@ async function google(box: HTMLElement, cfg: Config): Promise<Api> {
     zoom: 10,
     disableDefaultUI: true,
     zoomControl: true,
-    gestureHandling: "cooperative",
+    gestureHandling: matchMedia("(pointer: coarse)").matches ? "cooperative" : "greedy",
     clickableIcons: false,
     styles: LIGHT,
   });
@@ -266,6 +292,8 @@ function wireCheck(root: HTMLElement, cfg: Config, api: () => Api | null) {
     text.textContent = cfg.text[state];
   };
 
+  const away = root.querySelector<HTMLElement>("[data-outside-card]");
+  away?.querySelector("[data-outside-close]")?.addEventListener("click", () => (away.hidden = true));
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const q = (new FormData(form).get("q") ?? "").toString().trim();
@@ -277,7 +305,10 @@ function wireCheck(root: HTMLElement, cfg: Config, api: () => Api | null) {
       // Label with what the visitor typed: the geocoder may land on a
       // neighbouring street, which is fine for coverage but wrong as a label.
       api()?.pin(hit.at, q.split(",")[0].trim());
-      say(covered(hit.at) ? "in" : "out");
+      const inside = covered(hit.at);
+      say(inside ? "in" : "out");
+      // Out of the area: the contact card in the map's corner, pin still visible.
+      if (away) away.hidden = inside;
       // Carried to the booking form in this tab only, never in a URL.
       try { sessionStorage.setItem(ADDRESS_KEY, hit.label || q); } catch {}
     } catch (err) {
@@ -312,7 +343,42 @@ export async function geocodePhoton(q: string, cfg: Pick<Config, "center" | "lan
   if (!f) return null;
   const p = f.properties ?? {};
   const label = [[p.housenumber, p.street].filter(Boolean).join(" "), p.city ?? p.name].filter(Boolean).join(", ");
-  return { at: f.geometry.coordinates as LngLat, label };
+  const street: string | undefined = p.street ?? (p.type === "street" ? p.name : undefined);
+  const town: string | undefined = p.city ?? p.town ?? p.village ?? p.district;
+  return { at: f.geometry.coordinates as LngLat, label, street, town };
+}
+
+export type Suggestion = { label: string; address: string; postal: string; at: LngLat };
+
+/** Address suggestions as the visitor types (Photon, Greater Montréal only):
+ *  houses and streets, never whole towns. */
+export async function photonSuggest(q: string, cfg: Pick<Config, "center" | "lang">, signal?: AbortSignal): Promise<Suggestion[]> {
+  const u = new URL("https://photon.komoot.io/api/");
+  u.searchParams.set("q", expand(q));
+  u.searchParams.set("bbox", "-74.9,45.0,-73.3,45.8");
+  u.searchParams.set("lat", String(cfg.center[1]));
+  u.searchParams.set("lon", String(cfg.center[0]));
+  u.searchParams.set("limit", "8");
+  u.searchParams.set("lang", cfg.lang === "fr" ? "fr" : "en");
+  u.searchParams.append("layer", "house");
+  u.searchParams.append("layer", "street");
+  const r = await fetch(u, { signal });
+  if (!r.ok) return [];
+  const seen = new Set<string>();
+  const out: Suggestion[] = [];
+  for (const f of (await r.json()).features ?? []) {
+    const p = f.properties ?? {};
+    const street = p.street ?? (p.type === "street" ? p.name : undefined);
+    if (!street) continue;
+    const town = p.city ?? p.town ?? p.village ?? p.district ?? "";
+    const line = [p.housenumber, street].filter(Boolean).join(" ");
+    const address = [line, town].filter(Boolean).join(", ");
+    if (seen.has(address)) continue;
+    seen.add(address);
+    out.push({ label: [address, p.postcode].filter(Boolean).join(" · "), address, postal: p.postcode ?? "", at: f.geometry.coordinates as LngLat });
+    if (out.length === 5) break;
+  }
+  return out;
 }
 
 /** Street abbreviations Photon doesn't read, in both languages. */

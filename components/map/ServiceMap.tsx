@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Check, WarningCircle } from "@phosphor-icons/react";
+import { ChatText, Check, EnvelopeSimple, MapPin, Phone, WarningCircle } from "@phosphor-icons/react";
 import { business } from "@/lib/business";
 import { coverage, townPoints, center } from "@/lib/area";
 import { dict, href, plain, town, type Lang } from "@/lib/i18n";
@@ -14,6 +14,7 @@ import { dict, href, plain, town, type Lang } from "@/lib/i18n";
  */
 export function ServiceMap({ lang, check = true }: { lang: Lang; check?: boolean }) {
   const t = dict(lang);
+  const o = t.book.outside;
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,6 +54,23 @@ export function ServiceMap({ lang, check = true }: { lang: Lang; check?: boolean
           <img src="/media/map/area-tall.webp" alt="" width={780} height={975} decoding="async" />
         </picture>
         <p className="smap__legend"><span className="smap__swatch" aria-hidden />{t.map.legend}</p>
+        {check && (
+          /* Out of the area: never a dead end. A compact card in the map's
+             corner, so the pin stays in view; call, text or email from it. */
+          <div className="smap__away" data-outside-card role="status" hidden>
+            <div className="smap__away-head">
+              <MapPin size={18} weight="fill" aria-hidden />
+              <p className="smap__away-title">{o.title}</p>
+              <button type="button" className="smap__away-x" data-outside-close aria-label={t.book.office.close}>×</button>
+            </div>
+            <p className="smap__away-body">{o.body}</p>
+            <div className="smap__away-actions">
+              <a className="btn btn--red btn--sm" href={`tel:${business.phone.tel}`}><Phone size={15} weight="bold" aria-hidden />{o.call}</a>
+              <a className="btn btn--ghost btn--sm" href={`sms:${business.phone.tel}`}><ChatText size={15} weight="bold" aria-hidden />{o.text}</a>
+              <a className="btn btn--ghost btn--sm" href={`mailto:${business.email}?subject=${encodeURIComponent(o.emailSubject)}`}><EnvelopeSimple size={15} weight="bold" aria-hidden />{o.email}</a>
+            </div>
+          </div>
+        )}
       </div>
       {check && (
         <form className="smap__check" data-check>

@@ -62,5 +62,8 @@ export const earliest = (now = Date.now()) => new Date(now + business.booking.le
 export const pickServices = (raw: string[]): string[] | null => {
   const asked = raw.map((s) => s.trim()).filter(Boolean);
   if (!asked.length || asked.some((s) => !bySlug(s))) return null;
-  return services.map((s) => s.slug).filter((s) => asked.includes(s));
+  // Menu order. A service can appear once per car (up to 3 cars on one visit).
+  const order = services.map((s) => s.slug);
+  const out = order.flatMap((slug) => asked.filter((s) => s === slug).slice(0, 3));
+  return out.length > 12 ? null : out;
 };

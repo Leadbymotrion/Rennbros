@@ -2,6 +2,10 @@
  * The deposit, one rule for the page and the server (the server never takes
  * an amount from the browser; it recomputes it from the services).
  *
+ * Current rule (business.booking.depositMode = "flat"): a flat amount for any
+ * service or combination, no tax on it (see depositFor).
+ *
+ * Archived rule ("percent"), kept switchable:
  *   deposit = percent x (the estimate shown at booking + GST + QST)
  *
  * The estimate is the "from" price the customer sees: the low end of a range,
@@ -34,4 +38,19 @@ export function estimateWithTax(slugs: string[], rim?: Rim, runFlat = false): nu
 export function depositCents(slugs: string[], percent: number | null, rim?: Rim, runFlat = false): number {
   if (!percent || percent <= 0) return 0;
   return Math.round(estimateWithTax(slugs, rim, runFlat) * percent);
+}
+
+/** Whether the site takes a deposit at all. */
+export const depositOn = (): boolean => {
+  const b = business.booking;
+  return b.depositMode === "flat" ? b.depositFlatCents > 0 : b.depositMode === "percent" ? !!b.depositPercent && b.depositPercent > 0 : false;
+};
+
+/** The deposit for this booking, in cents, by the current rule. */
+export function depositFor(slugs: string[], rim?: Rim, runFlat = false): number {
+  const b = business.booking;
+  if (!slugs.length) return 0;
+  if (b.depositMode === "flat") return Math.max(0, b.depositFlatCents);
+  if (b.depositMode === "percent") return depositCents(slugs, b.depositPercent, rim, runFlat);
+  return 0;
 }

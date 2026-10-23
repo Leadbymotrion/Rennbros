@@ -12,6 +12,7 @@ export const business = {
    *  (Consumer Protection Act s. 54.4: name and address before a distance contract). */
   legal: {
     name: "9572-4878 Québec inc.",
+    /** Kept for the legal PDFs only; never shown on the website (Tashii, 2026-10-23). */
     neq: "1182387598",
     address: { en: "21 Avenue 101E, Notre-Dame-de-l'Île-Perrot, QC J7W 0L4", fr: "21, 101e Avenue, Notre-Dame-de-l’Île-Perrot (Québec) J7W 0L4" },
   },
@@ -78,13 +79,18 @@ export const business = {
     leadTimeHours: 24,
     /** Travel is in the buffer now; nothing is added to the time shown. */
     travelMinutes: 0,
-    /** Percent of the estimate WITH taxes taken as a deposit when booking
-     *  online (20 = 20%), owner's rule 2026-10-04. Refundable in full when
-     *  cancelled at least 24 h before the visit. null turns the deposit off. */
+    /** How the online deposit is set (owner's rule 2026-10-20): "flat" takes
+     *  depositFlatCents for any service or combination, no tax on it; it is
+     *  credited against the final bill after taxes are worked out on the full
+     *  price. "percent" (archived, the 2026-10-04 rule) takes depositPercent of
+     *  the estimate WITH taxes. null turns the deposit off. */
+    depositMode: "flat" as "flat" | "percent" | null,
+    depositFlatCents: 5000,
+    /** Archived: only used when depositMode is "percent" (20 = 20%). */
     depositPercent: 20 as number | null,
-    /** DRAFT — proposed in the booking terms (lib/i18n pages.terms), for the
-     *  owner to confirm. */
-    cancellationHours: 24 as number | null,
+    /** Free changes and cancellations up to this many hours before the visit
+     *  (matches the owner's Square setting, 2026-10-20). */
+    cancellationHours: 48 as number | null,
   },
 
   /** Québec sales taxes on the estimate: GST 5% + QST 9.975%. */

@@ -26,11 +26,15 @@
   html.js .progress {
     display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; list-style: none; padding: 0;
   }
-  .progress li { display: grid; gap: 0.5rem; font-size: 0.75rem; color: var(--color-ink-3); }
-  .progress li::before { content: ""; height: 3px; border-radius: 3px; background: var(--color-rule); transition: background-color 320ms var(--ease-soft); }
+  .progress li { display: grid; font-size: 0.75rem; color: var(--color-ink-3); }
+  .progress__btn { all: unset; box-sizing: border-box; display: grid; gap: 0.5rem; cursor: pointer; color: inherit; font: inherit; padding-bottom: 0.25rem; }
+  .progress__btn:disabled { cursor: default; }
+  .progress__btn:focus-visible { outline: 2px solid var(--color-red-ink); outline-offset: 3px; border-radius: 4px; }
+  .progress li[data-state="done"] .progress__btn:hover em { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }
+  .progress__btn::before { content: ""; height: 3px; border-radius: 3px; background: var(--color-rule); transition: background-color 320ms var(--ease-soft); }
   .progress li span { display: none; }
   .progress li em { font-style: normal; font-weight: 500; }
-  .progress li[data-state="done"]::before, .progress li[data-state="now"]::before { background: var(--color-red); }
+  .progress li[data-state="done"] .progress__btn::before, .progress li[data-state="now"] .progress__btn::before { background: var(--color-red); }
   .progress li[data-state="now"] { color: var(--color-ink); }
   @media (max-width: 35em) { .progress li em { display: none; } .progress li[data-state="now"] em { display: block; white-space: nowrap; } }
 
@@ -68,8 +72,8 @@
     border: 1px solid var(--color-rule-2); color: transparent;
     transition: background-color 180ms var(--ease-soft), color 180ms var(--ease-soft);
   }
-  .choice:has(input:checked) { border-color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-ink); }
-  .choice:has(input:checked) .choice__tick { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+  .choice:has(input:checked) { border-color: var(--color-red); box-shadow: 0 0 0 1px var(--color-red); }
+  .choice:has(input:checked) .choice__tick { background: var(--color-red); border-color: var(--color-red); color: var(--color-on-red); }
   .choice:has(input:focus-visible) { outline: 2px solid var(--color-red-ink); outline-offset: 3px; }
 
   .pills { display: flex; flex-wrap: wrap; gap: 0.625rem; }
@@ -81,7 +85,7 @@
     font-size: 0.9375rem; transition: all 180ms var(--ease-soft);
   }
   .pill:hover span { border-color: var(--color-ink-4); }
-  .pill input:checked + span { background: var(--color-ink); color: var(--color-paper); border-color: var(--color-ink); }
+  .pill input:checked + span { background: var(--color-red); color: var(--color-on-red); border-color: var(--color-red); }
   .pill input:focus-visible + span { outline: 2px solid var(--color-red-ink); outline-offset: 3px; }
 
   /* The line is always there, so a result appearing never moves the form. */
@@ -89,6 +93,17 @@
   .cover[data-state="in"] { color: var(--color-ok); }
   .cover[data-state="out"] { color: var(--color-red-ink); }
   .cover[data-state="checking"] { color: var(--color-ink-3); }
+  .cover[data-state="partial"] { color: var(--color-ink-2); }
+
+  /* Address suggestions (test site): a plain list under the field. */
+  .addr { position: relative; }
+  .addr__list {
+    position: absolute; z-index: 20; inset: calc(100% + 4px) 0 auto; margin: 0; padding: 0.3rem; list-style: none;
+    background: var(--color-card); border: 1px solid var(--color-rule-2); border-radius: var(--radius-sm);
+    box-shadow: 0 12px 28px -12px rgb(31 34 39 / 0.25);
+  }
+  .addr__list li { padding: 0.6rem 0.7rem; border-radius: 7px; cursor: pointer; font-size: 0.9375rem; line-height: 1.35; }
+  .addr__list li[aria-selected="true"], .addr__list li:hover { background: var(--color-mist); }
 
   .grid2, .grid3 { display: grid; gap: 1rem; }
   @media (min-width: 40em) {
@@ -96,6 +111,20 @@
     .grid3 { grid-template-columns: 6rem 1fr 1fr; }
     .span2 { grid-column: 1 / -1; }
   }
+  /* More than one car (test copy). The picker sits under the step title. */
+  .cars { display: grid; gap: 0.75rem; padding-bottom: 1.25rem; margin-bottom: 0.25rem; border-bottom: 1px solid var(--color-rule); }
+  .cars__pick { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; }
+  .cars__label { font-weight: 500; }
+  .cars__many { margin: 0; padding: 0.8rem 1rem; border-radius: var(--radius-sm); background: var(--color-mist); font-size: 0.9375rem; }
+  .cars__many a { font-weight: 600; color: var(--color-red-ink); }
+  .car { border: 1px solid var(--color-rule-2); border-radius: var(--radius-sm); padding: 0.9rem 1rem 1rem; margin: 0; min-width: 0; }
+  .car__title { font-weight: 600; padding: 0 0.35rem; }
+  .car__list { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .car__list .pill span { font-size: 0.875rem; }
+  [data-car]:not([hidden]) ~ [data-car]:not([hidden]) { margin-top: 0.25rem; }
+  .cars-more { display: grid; gap: 0.9rem; margin: 1.25rem 0; }
+  .cars-more__title { font-size: 1.0625rem; font-weight: 600; margin: 0; }
+  .car--details { display: grid; gap: 0.75rem; }
   .opt { font-style: normal; font-weight: 400; color: var(--color-ink-3); }
 
   .err { display: none; color: var(--color-red-ink); font-size: 0.9375rem; margin-top: calc(0.625rem * -1); }
@@ -122,15 +151,18 @@
   }
   .cal__nav:hover:not(:disabled) { border-color: var(--color-ink); }
   .cal__nav:disabled { opacity: 0.3; cursor: default; }
-  .cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  /* minmax(0, 1fr): seven equal columns, whatever the day names measure (a wider "WED" made its column, and its squares, bigger). */
+  .cal__grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; align-items: start; }
   .cal__grid .cal__dow {
     text-align: center; padding-bottom: 0.375rem;
     font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3);
   }
   .cal__grid .cal__day {
-    position: relative; aspect-ratio: 1; display: grid; place-items: center;
-    border-radius: var(--radius-sm); border: 1px solid transparent; background: none;
-    font: inherit; font-size: 0.9375rem; font-variant-numeric: tabular-nums; color: var(--color-ink-4);
+    /* Flex, not grid: Safari centres a button's content reliably this way. */
+    position: relative; aspect-ratio: 1; width: 100%; min-width: 0; padding: 0; margin: 0;
+    display: flex; align-items: center; justify-content: center; line-height: 1;
+    border-radius: var(--radius-sm); border: 1px solid transparent; background: none; -webkit-appearance: none; appearance: none;
+    font: inherit; font-size: 0.9375rem; line-height: 1; font-variant-numeric: tabular-nums; color: var(--color-ink-4);
   }
   .cal__grid .cal__day:not(:disabled) {
     cursor: pointer; color: var(--color-ink); font-weight: 500; background: var(--color-mist); border-color: var(--color-rule);
@@ -471,6 +503,7 @@
 .co__due { padding-top: 0.75rem; border-top: 1px solid var(--color-rule-2); font-weight: 600; }
 .co__due dd { font-family: var(--font-display); font-weight: 500; font-size: 1.5rem; letter-spacing: -0.02em; }
 .co__later { font-size: 0.875rem; color: var(--color-ink-3); }
+.co__note { margin: 0.4rem 0 0; text-align: right; font-size: 0.8125rem; color: var(--color-ink-3); }
 .co__pay-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
 .co__pay-title { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 1.25rem; letter-spacing: -0.01em; }
 .co__pay-amount { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 2rem; line-height: 1; letter-spacing: -0.02em; white-space: nowrap; }
@@ -519,6 +552,7 @@
 .notice__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; padding-top: 0.2rem; }
 .notice__actions .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
 @media (max-width: 30em) { .notice__actions .btn { flex: 1 1 auto; justify-content: center; } }
+.notice__change { display: block; margin: 0.75rem 0 0 auto; font-size: 0.9375rem; }
 .doc__download { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; align-items: center; padding: 1rem 1.15rem; border: 1px solid var(--color-rule); border-radius: var(--radius-sm); background: var(--color-card); }
 .doc__download .link { display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 500; }
 .doc__download .soft { color: var(--color-ink-3); font-weight: 400; }

@@ -9,6 +9,9 @@ import { Chrome } from "@/components/site/Chrome";
 import { AutoUpdate } from "@/components/site/AutoUpdate";
 import { StructuredData } from "@/components/site/StructuredData";
 import { clash, general } from "../fonts";
+import { on } from "@/lib/preview";
+import { FleetBanner } from "@/components/home/FleetBanner";
+import { HomeOnly } from "@/components/home/HomeOnly";
 import "../globals.css";
 import "../site.css";
 import "../sections.css";
@@ -61,6 +64,14 @@ export const viewport: Viewport = {
 const boot = `document.documentElement.classList.add("js");try{if(localStorage.getItem("rennbros.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}
 addEventListener("load",function(){try{if(getComputedStyle(document.documentElement).getPropertyValue("--color-paper").trim())return;var k="rennbros.cssReload",t=+sessionStorage.getItem(k)||0;if(Date.now()-t<6e4)return;sessionStorage.setItem(k,String(Date.now()));location.reload()}catch(e){}});`;
 
+/* (lib/preview.ts, LIVE.frenchAuto) The first visit opens in the visitor's
+   language, read from the phone's or computer's language settings (the
+   browser reports them): English stays English, French opens the French
+   site, and any other language opens French too (Québec). After that, the
+   visitor's own pick with the EN/FR link always wins. Only plain page
+   visits are redirected; search engines index both languages as they are. */
+const frenchFirst = `try{var k="rennbros.lang";document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[hreflang]");if(a)localStorage.setItem(k,a.getAttribute("hreflang"))},true);if(!localStorage.getItem(k)&&!/bot|crawl|spider|slurp|lighthouse/i.test(navigator.userAgent)){var l=((navigator.languages&&navigator.languages[0])||navigator.language||"").toLowerCase(),want=/^en(-|_|$)/.test(l)?"en":"fr",here=document.documentElement.lang.slice(0,2);localStorage.setItem(k,want);if(want!==here){var p=location.pathname,to=want==="fr"?"/fr"+(p==="/"?"":p):(p==="/fr"||p.indexOf("/fr/")===0?p.slice(3)||"/":p);location.replace(to+location.search+location.hash)}}}catch(e){}`;
+
 export default async function Layout({ children, params }: { children: React.ReactNode; params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   if (!isLang(lang)) notFound();
@@ -68,13 +79,14 @@ export default async function Layout({ children, params }: { children: React.Rea
   return (
     <html lang={t.locale} className={`${clash.variable} ${general.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: boot }} />
+        <script dangerouslySetInnerHTML={{ __html: on("frenchAuto") ? boot + frenchFirst : boot }} />
         <StructuredData lang={lang} />
       </head>
       <body>
         <a className="skip" href="#main">{t.nav.skip}</a>
         <span className="edge-sentinel edge-sentinel--top" aria-hidden="true" />
         <span className="edge-sentinel edge-sentinel--fold" aria-hidden="true" />
+        {on("fleetBanner") && <HomeOnly><FleetBanner lang={lang} /></HomeOnly>}
         <SiteHeader lang={lang} />
         <main id="main" tabIndex={-1}>
           {children}

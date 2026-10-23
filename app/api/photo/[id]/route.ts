@@ -13,6 +13,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         "content-type": String(hit.metadata?.type ?? "image/jpeg"),
         "cache-control": "private, max-age=86400",
         "x-robots-tag": "noindex, nofollow",
+        // Shown as an image only: never run as a page, never sniffed as another type.
+        "x-content-type-options": "nosniff",
+        "content-security-policy": "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox",
       },
     });
   } catch (e) {
