@@ -289,7 +289,7 @@ export const en = {
       warranty: "Warranty",
       oneYear: "12 months",
       onParts: "Manufacturer warranty on parts; we refit a defective part free.",
-      priceNote: { hourly: "Parts and tax extra; parts confirmed for your car before we come.", call: "Per call, plus tax. Travel included.", from: "A typical price; some cars and sensors cost more, and we tell you before any extra. Plus tax, travel included.", range: "Plus tax, travel included.", tiers: "A set of four, by rim size. Plus tax, travel included." },
+      priceNote: { hourly: "Parts and tax extra; parts confirmed for your car before we come.", call: "Per call, plus tax. Travel included.", range: "Plus tax, travel included.", tiers: "A set of four, by rim size. Plus tax, travel included." },
       priceExtra: {"tires": "Price is base cost, subject to change based on vehicle and tire condition.", "ppi": "Price depends on the location of the vehicle being inspected.", "ac-diagnostic": "Price is base cost, subject to change based on the condition of the vehicle."} as Record<string, string>,
       byRim: "By rim size, set of 4",
       runFlat: "Run-flat/EV tires",

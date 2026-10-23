@@ -51,8 +51,6 @@ export const price = (lang: Lang, s: { pricing: Pricing }) => {
       return `${money(lang, p.rate)}${f.perHour} ${f.plusParts}`;
     case "call":
       return `${money(lang, p.amount)} ${f.perCall}`;
-    case "from":
-      return `${f.from} ${money(lang, p.amount)}`;
     case "range":
       return [moneyRange(lang, p.min, p.max), p.plus && f.plus[p.plus]].filter(Boolean).join(" ");
     case "tiers":
