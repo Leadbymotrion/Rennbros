@@ -395,10 +395,11 @@ export function BookingForm({ lang }: { lang: Lang }) {
                     {deposit ? (
                       <>
                         <div className="co__due"><dt>{b.confirm.payTitle}</dt><dd className="num" data-pay-deposit /></div>
-                        <div className="co__later"><dt>{b.confirm.payLater}</dt><dd>{flatDeposit ? b.confirm.payLaterFlat : b.confirm.payLaterValue}</dd></div>
+                        {flatDeposit ? null : <div className="co__later"><dt>{b.confirm.payLater}</dt><dd>{b.confirm.payLaterValue}</dd></div>}
                       </>
                     ) : null}
                   </dl>
+                  {deposit && flatDeposit ? <p className="co__note">{b.confirm.payLaterFlat}</p> : null}
                 </div>
               </section>
 

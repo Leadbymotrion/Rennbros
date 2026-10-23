@@ -503,6 +503,7 @@
 .co__due { padding-top: 0.75rem; border-top: 1px solid var(--color-rule-2); font-weight: 600; }
 .co__due dd { font-family: var(--font-display); font-weight: 500; font-size: 1.5rem; letter-spacing: -0.02em; }
 .co__later { font-size: 0.875rem; color: var(--color-ink-3); }
+.co__note { margin: 0.4rem 0 0; text-align: right; font-size: 0.8125rem; color: var(--color-ink-3); }
 .co__pay-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
 .co__pay-title { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 1.25rem; letter-spacing: -0.01em; }
 .co__pay-amount { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 2rem; line-height: 1; letter-spacing: -0.02em; white-space: nowrap; }

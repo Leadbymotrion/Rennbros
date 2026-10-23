@@ -395,14 +395,25 @@ html.js .smap__check { display: grid; }
 .rv__viewport.is-still { overflow-x: auto; scroll-snap-type: x mandatory; cursor: auto; scrollbar-width: none; }
 .rv__viewport.is-still .rv__card { scroll-snap-align: start; }
 
-/* Fleet and corporate band (test copy only). Yellow accents by day, red at night. */
-.fleet { --fleet-accent: #f2c230; --fleet-on: #1f2227; background: var(--color-ink); color: var(--color-paper); }
-:root[data-theme="dark"] .fleet { --fleet-accent: #e0262d; --fleet-on: #fff; background: var(--color-mist); color: var(--color-ink); }
+/* Fleet and corporate band, at the very top of the home page above the
+   header (test copy only). Dark in both themes, like the dark promo strip;
+   the fleet photo sits on the right and fades into the band. Accent: yellow
+   by day, red at night. */
+.fleet {
+  --fleet-accent: #f2c230; --fleet-on: #1f2227;
+  position: relative; overflow: hidden; isolation: isolate;
+  height: 3.5rem; background: #16181c; color: #f1f2f4;
+}
+:root[data-theme="dark"] .fleet { --fleet-accent: #e0262d; --fleet-on: #fff; background: #0e0f12; border-bottom: 1px solid #2a2d33; }
+.fleet__photo {
+  position: absolute; inset: 0 0 0 auto; z-index: -1; width: min(34%, 30rem);
+  background: center 62% / cover no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 45%); mask-image: linear-gradient(90deg, transparent, #000 45%);
+}
+.fleet__inner { position: relative; height: 100%; display: flex; align-items: center; gap: 1.25rem; }
+.fleet--photo .fleet__inner { padding-right: min(26%, 22rem); }
+.fleet__tag { flex: none; margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fleet-accent); }
 :root[data-theme="dark"] .fleet__tag { color: #ff6b6f; }
-.fleet__inner { position: relative; display: flex; align-items: center; gap: 1rem; min-height: 3.75rem; padding-block: 0.6rem; }
-.fleet--photo .fleet__inner { min-height: 4.5rem; }
-.fleet__photo { flex: none; width: 6.5rem; align-self: stretch; margin-block: -0.6rem; background: center / cover no-repeat; border-radius: 0; }
-.fleet__tag { flex: none; margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fleet-accent); }
 .fleet__window {
   flex: 1; min-width: 0; overflow: hidden;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
@@ -415,15 +426,19 @@ html.js .smap__check { display: grid; }
 /* Left to right: start one copy to the left, slide to rest. */
 @keyframes fleet-drift { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 .fleet__call {
-  flex: none; display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.55rem 1rem; border-radius: 999px;
-  background: var(--fleet-accent); color: var(--fleet-on); font-weight: 600; font-size: 0.9375rem; text-decoration: none;
+  flex: none; display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 1rem; border-radius: 999px;
+  background: var(--fleet-accent); color: var(--fleet-on); font-weight: 600; font-size: 0.875rem; text-decoration: none;
   transition: transform 160ms var(--ease-soft), filter 160ms var(--ease-soft);
 }
 .fleet__call:hover { filter: brightness(1.06); }
 .fleet__call:active { transform: translateY(1px); }
 .fleet__call:focus-visible { outline: 2px solid var(--fleet-accent); outline-offset: 3px; }
 @media (max-width: 40em) {
-  .fleet__tag, .fleet__photo { display: none; }
-  .fleet__call span { font-size: 0.875rem; }
+  .fleet { height: 3rem; }
+  .fleet__tag { display: none; }
+  .fleet__photo { width: 30%; }
+  .fleet--photo .fleet__inner { padding-right: 18%; }
+  .fleet__track li { font-size: 0.875rem; }
+  .fleet__call { padding: 0.4rem 0.8rem; }
 }
 @media (prefers-reduced-motion: reduce) { .fleet__track { animation: none; } }

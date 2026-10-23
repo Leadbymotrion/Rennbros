@@ -10,6 +10,8 @@ import { AutoUpdate } from "@/components/site/AutoUpdate";
 import { StructuredData } from "@/components/site/StructuredData";
 import { clash, general } from "../fonts";
 import { PREVIEW } from "@/lib/preview";
+import { FleetBanner } from "@/components/home/FleetBanner";
+import { HomeOnly } from "@/components/home/HomeOnly";
 import "../globals.css";
 import "../site.css";
 import "../sections.css";
@@ -84,6 +86,7 @@ export default async function Layout({ children, params }: { children: React.Rea
         <a className="skip" href="#main">{t.nav.skip}</a>
         <span className="edge-sentinel edge-sentinel--top" aria-hidden="true" />
         <span className="edge-sentinel edge-sentinel--fold" aria-hidden="true" />
+        {PREVIEW && <HomeOnly><FleetBanner lang={lang} /></HomeOnly>}
         <SiteHeader lang={lang} />
         <main id="main" tabIndex={-1}>
           {children}

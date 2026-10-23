@@ -628,7 +628,7 @@ export const en = {
       payDeposit: (pct: number) => `Deposit (${pct}%)`,
       payLater: "After the work",
       payLaterValue: "The rest, plus tax",
-      payLaterFlat: "The total with taxes, less the $50",
+      payLaterFlat: "This $50 will be subtracted from your final invoice.",
       paySecure: "Payments are processed securely by Square, a third-party payment processor.",
       acceptPre: "I have read and accept the",
       acceptTerms: "booking terms",

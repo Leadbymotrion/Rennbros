@@ -6,8 +6,6 @@ import { Menu } from "@/components/menu/Menu";
 import { Marquee, Steps, Area, FaqTeaser, Closing } from "@/components/home/Sections";
 import { ReviewsReel } from "@/components/home/ReviewsReel";
 import { googleReviews } from "@/lib/reviews";
-import { FleetBanner } from "@/components/home/FleetBanner";
-import { PREVIEW } from "@/lib/preview";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
@@ -42,7 +40,6 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
         <Menu lang={lang} headingId="menu-title" photos />
       </section>
 
-      {PREVIEW && <FleetBanner lang={lang} />}
       <Steps lang={lang} />
       <Area lang={lang} />
       {reviews && <ReviewsReel lang={lang} data={reviews} />}

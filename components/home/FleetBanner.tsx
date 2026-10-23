@@ -10,7 +10,8 @@ const PHOTO = "/media/fleet-lot.jpg";
 const hasPhoto = fs.existsSync(path.join(process.cwd(), "public", PHOTO));
 
 /**
- * Fleet and corporate rates, a slim band (test copy only, lib/preview.ts).
+ * Fleet and corporate rates: a slim dark band at the very top of the home
+ * page, above the header (test copy only, lib/preview.ts).
  * The lines drift left to right on a loop and fade in and out at the edges;
  * the call button stays put. Yellow accents by day, red at night.
  */
@@ -18,8 +19,8 @@ export function FleetBanner({ lang }: { lang: Lang }) {
   const f = dict(lang).home.fleet;
   return (
     <section className={`fleet${hasPhoto ? " fleet--photo" : ""}`} aria-label={f.label}>
+      {hasPhoto && <span className="fleet__photo" style={{ backgroundImage: `url(${PHOTO})` }} aria-hidden="true" />}
       <div className="fleet__inner page">
-        {hasPhoto && <span className="fleet__photo" style={{ backgroundImage: `url(${PHOTO})` }} aria-hidden="true" />}
         <p className="fleet__tag">{f.label}</p>
         <div className="fleet__window">
           <ul className="fleet__track">

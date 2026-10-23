@@ -631,7 +631,7 @@ export const fr: Dict = {
       payDeposit: (pct: number) => `Dépôt (${pct} %)`,
       payLater: "Après les travaux",
       payLaterValue: "Le reste, taxes en sus",
-      payLaterFlat: "Le total taxes incluses, moins les 50 $",
+      payLaterFlat: "Ces 50 $ seront déduits de votre facture finale.",
       paySecure: "Les paiements sont traités de façon sécurisée par Square, un fournisseur de paiement tiers.",
       acceptPre: "J’ai lu et j’accepte les",
       acceptTerms: "conditions de réservation",
