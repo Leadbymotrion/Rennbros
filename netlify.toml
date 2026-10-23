@@ -9,3 +9,16 @@
 # like the rennbros-test copy, get it too).
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Images, fonts and other files served straight from the CDN get the same
+# protection as pages: HTTPS only, no MIME sniffing, and other websites can't
+# embed them (Cross-Origin-Resource-Policy). Search engines and link previews
+# fetch them server-side, which this doesn't affect.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains"
+    X-Content-Type-Options = "nosniff"
+    Cross-Origin-Resource-Policy = "same-site"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
