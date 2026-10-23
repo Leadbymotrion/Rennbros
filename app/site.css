@@ -119,3 +119,16 @@
 .bar__book { min-height: 48px; white-space: nowrap; }
 .bar__side { display: grid; justify-items: center; gap: 2px; text-decoration: none; font-size: 0.75rem; font-weight: 500; color: var(--color-ink-2); padding: 0.25rem 0; }
 @media (min-width: 60em) { .bar { display: none; } }
+
+/* Google review prompt: Google's G on a white chip, gold stars. */
+.greview {
+  display: inline-flex; align-items: center; gap: 0.65rem; margin-top: 0.9rem; padding: 0.45rem 0.95rem 0.45rem 0.45rem;
+  border: 1px solid var(--color-rule-2); border-radius: 999px; background: var(--color-card); color: var(--color-ink);
+  text-decoration: none; font-size: 0.875rem; font-weight: 500; line-height: 1.2;
+  transition: border-color 160ms var(--ease-soft), transform 160ms var(--ease-soft);
+}
+.greview:hover { border-color: var(--color-ink-4); transform: translateY(-1px); }
+.greview:focus-visible { outline: 2px solid var(--color-red-ink); outline-offset: 3px; }
+.greview__g { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08); flex: none; }
+.greview__text { display: grid; gap: 0.1rem; }
+.greview__stars { color: #fbbc05; font-size: 0.75rem; letter-spacing: 0.08em; }

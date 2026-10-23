@@ -48,12 +48,6 @@ export default async function Emergency({ params }: { params: Promise<{ lang: st
             );
           })}
         </ul>
-        <div className="emerg__cta">
-          <a className="btn btn--red" href={`tel:${business.phone.tel}`}>
-            <Phone size={20} weight="bold" aria-hidden />
-            {e.call} · <span className="num">{business.phone.display}</span>
-          </a>
-        </div>
       </section>
     </>
   );
