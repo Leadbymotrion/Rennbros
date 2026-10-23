@@ -12,6 +12,7 @@ export const business = {
    *  (Consumer Protection Act s. 54.4: name and address before a distance contract). */
   legal: {
     name: "9572-4878 Québec inc.",
+    /** Kept for the legal PDFs only; never shown on the website (Tashii, 2026-10-23). */
     neq: "1182387598",
     address: { en: "21 Avenue 101E, Notre-Dame-de-l'Île-Perrot, QC J7W 0L4", fr: "21, 101e Avenue, Notre-Dame-de-l’Île-Perrot (Québec) J7W 0L4" },
   },

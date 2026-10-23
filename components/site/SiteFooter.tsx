@@ -85,7 +85,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
         </div>
       </div>
       <div className="page foot__base">
-        <p>© {new Date().getFullYear()} {business.name} · {business.legal.name} · NEQ {business.legal.neq} · {t.footer.rights}</p>
+        <p>© {new Date().getFullYear()} {business.name} · {business.legal.name} · {t.footer.rights}</p>
         <p className="foot__square">
           {t.footer.squareLabel}{" "}
           {t.pages.square.links.map(([, url], i) => (
