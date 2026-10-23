@@ -292,7 +292,7 @@ export const fr: Dict = {
       warranty: "Garantie",
       oneYear: "12 mois",
       onParts: "Garantie du fabricant sur les pièces; nous reposons sans frais une pièce défectueuse.",
-      priceNote: { hourly: "Pièces et taxes en sus; pièces confirmées pour votre véhicule avant notre arrivée.", call: "Par appel, taxes en sus. Déplacement compris.", range: "Taxes en sus, déplacement compris.", tiers: "Ensemble de 4, selon la taille des jantes. Taxes en sus, déplacement compris." },
+      priceNote: { hourly: "Pièces et taxes en sus; pièces confirmées pour votre véhicule avant notre arrivée.", call: "Par appel, taxes en sus. Déplacement compris.", from: "Prix habituel; certains véhicules et capteurs coûtent plus, et nous vous le disons avant tout supplément. Taxes en sus, déplacement compris.", range: "Taxes en sus, déplacement compris.", tiers: "Ensemble de 4, selon la taille des jantes. Taxes en sus, déplacement compris." },
       priceExtra: {"tires": "Prix de base, sujet à changement selon l’état du véhicule et des pneus.", "ppi": "Le prix dépend de l’endroit où se trouve le véhicule à inspecter.", "ac-diagnostic": "Prix de base, sujet à changement selon l’état du véhicule."} as Record<string, string>,
       byRim: "Selon la taille des jantes, ensemble de 4",
       runFlat: "Pneus à roulage à plat/VÉ",

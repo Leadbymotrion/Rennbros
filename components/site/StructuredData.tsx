@@ -49,6 +49,8 @@ function spec(p: Pricing) {
       return { ...base, "@type": "UnitPriceSpecification", price: p.rate, unitCode: "HUR" };
     case "call":
       return { ...base, price: p.amount };
+    case "from":
+      return { ...base, minPrice: p.amount };
     case "range":
       return { ...base, minPrice: p.min, maxPrice: p.max };
     case "tiers":
