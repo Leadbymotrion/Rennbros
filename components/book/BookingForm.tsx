@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef } from "react";
-import { ArrowLeft, ArrowRight, CalendarBlank, Camera, ChatText, EnvelopeSimple, Image as ImageIcon, CaretDown, CaretLeft, CaretRight, Check, LockSimple, MapPin, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, CalendarBlank, Camera, ChatText, EnvelopeSimple, Phone, Image as ImageIcon, CaretDown, CaretLeft, CaretRight, Check, LockSimple, MapPin, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
 import { business } from "@/lib/business";
 import { dict, href, money, price, duration, servicesIn, type Lang } from "@/lib/i18n";
 import { MOUNT } from "@/lib/services";
@@ -202,12 +202,13 @@ export function BookingForm({ lang }: { lang: Lang }) {
                 <button type="button" className="notice__x" data-outside-close aria-label={b.office.close}>×</button>
               </div>
               <p>{b.outside.body}</p>
-              <p className="notice__phone num"><a className="link" href={`tel:${business.phone.tel}`}>{business.phone.display}</a></p>
+              <p className="notice__phone num"><a className="link" href={`tel:${business.phone.tel}`}>{business.phone.display}</a> · <a className="link" href={`mailto:${business.email}`}>{business.email}</a></p>
               <div className="notice__actions">
+                <a className="btn btn--red" href={`tel:${business.phone.tel}`}><Phone size={16} weight="bold" aria-hidden />{b.outside.call}</a>
                 <a className="btn btn--ghost" href={`sms:${business.phone.tel}`}><ChatText size={16} weight="bold" aria-hidden />{b.outside.text}</a>
-                <a className="btn btn--ghost" href={`tel:${business.phone.tel}`}>{b.outside.call}</a>
-                <button type="button" className="btn btn--red" data-outside-close data-outside-change>{b.outside.change}</button>
+                <a className="btn btn--ghost" href={`mailto:${business.email}?subject=${encodeURIComponent(b.outside.emailSubject)}`}><EnvelopeSimple size={16} weight="bold" aria-hidden />{b.outside.email}</a>
               </div>
+              <button type="button" className="link notice__change" data-outside-close data-outside-change>{b.outside.change}</button>
             </dialog>
           </fieldset>
 

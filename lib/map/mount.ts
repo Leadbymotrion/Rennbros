@@ -266,6 +266,9 @@ function wireCheck(root: HTMLElement, cfg: Config, api: () => Api | null) {
     text.textContent = cfg.text[state];
   };
 
+  form.querySelectorAll("[data-outside-close]").forEach((b) =>
+    b.addEventListener("click", () => form.querySelector<HTMLDialogElement>("[data-outside-dialog]")?.close()),
+  );
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const q = (new FormData(form).get("q") ?? "").toString().trim();
@@ -277,7 +280,10 @@ function wireCheck(root: HTMLElement, cfg: Config, api: () => Api | null) {
       // Label with what the visitor typed: the geocoder may land on a
       // neighbouring street, which is fine for coverage but wrong as a label.
       api()?.pin(hit.at, q.split(",")[0].trim());
-      say(covered(hit.at) ? "in" : "out");
+      const inside = covered(hit.at);
+      say(inside ? "in" : "out");
+      // Out of the area: offer to call, text or email right away.
+      if (!inside) form.querySelector<HTMLDialogElement>("[data-outside-dialog]")?.showModal();
       // Carried to the booking form in this tab only, never in a URL.
       try { sessionStorage.setItem(ADDRESS_KEY, hit.label || q); } catch {}
     } catch (err) {

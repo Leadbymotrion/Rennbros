@@ -171,7 +171,10 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     }
     if (check(at)) return go(at + 1);
     if (at !== 1) return;
-    if (areaState === "out") return outsideDialog?.showModal();
+    if (areaState === "out") {
+      offeredFor = checkedFor;
+      return outsideDialog?.showModal();
+    }
     if (atOffice() && !value("parkingConsent")) openOffice(true);
   });
   back.addEventListener("click", () => go(at - 1));
@@ -328,6 +331,14 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
   // "out" blocks the next step (book by phone instead); unknown never blocks.
   let areaState: "in" | "out" | "" = "";
   let checkedFor = "";
+  /** Out of the area: offer to call, text or email right away (once per
+   *  address), as soon as the visitor has finished with the field. */
+  let offeredFor = "";
+  const offerContact = () => {
+    if (areaState !== "out" || offeredFor === checkedFor) return;
+    offeredFor = checkedFor;
+    form.querySelector<HTMLDialogElement>("[data-outside-dialog]")?.showModal();
+  };
   const coverCheck = async () => {
     const q = address.value.trim();
     const mine = ++lookup;
@@ -356,6 +367,8 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
       if (inside) $('[data-err="outside"]').classList.remove("on");
       cover.dataset.state = inside ? "in" : "out";
       cover.textContent = inside ? b.coverage.in : b.coverage.out;
+      // Picked from the suggestions or already left the field: pop up now.
+      if (!inside && document.activeElement !== address) offerContact();
     } catch {
       if (mine === lookup) cover.textContent = "";
     }
@@ -366,6 +379,7 @@ export function mountFlow(form: HTMLFormElement, cfg: Config) {
     clearTimeout(pause);
     pause = window.setTimeout(coverCheck, 900);
   });
+  address.addEventListener("blur", () => setTimeout(offerContact, 150));
   if (address.value) coverCheck();
 
   // --- Address suggestions as you type (test site only, lib/preview.ts) -----

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Check, WarningCircle } from "@phosphor-icons/react";
+import { ChatText, Check, EnvelopeSimple, MapPin, Phone, WarningCircle } from "@phosphor-icons/react";
 import { business } from "@/lib/business";
 import { coverage, townPoints, center } from "@/lib/area";
 import { dict, href, plain, town, type Lang } from "@/lib/i18n";
@@ -14,6 +14,7 @@ import { dict, href, plain, town, type Lang } from "@/lib/i18n";
  */
 export function ServiceMap({ lang, check = true }: { lang: Lang; check?: boolean }) {
   const t = dict(lang);
+  const o = t.book.outside;
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -69,6 +70,22 @@ export function ServiceMap({ lang, check = true }: { lang: Lang; check?: boolean
             <p data-result-text />
             <a className="link smap__book" href={href(lang, "/book")}>{t.check.book}</a>
           </div>
+          {/* Out of the area: never a dead end. Call, text or email right away. */}
+          <dialog className="notice" data-outside-dialog aria-labelledby="smap-outside-title">
+            <div className="notice__head">
+              <MapPin size={22} weight="fill" aria-hidden />
+              <h3 className="notice__title" id="smap-outside-title">{o.title}</h3>
+              <button type="button" className="notice__x" data-outside-close aria-label={t.book.office.close}>×</button>
+            </div>
+            <p>{o.body}</p>
+            <p className="notice__phone num"><a className="link" href={`tel:${business.phone.tel}`}>{business.phone.display}</a> · <a className="link" href={`mailto:${business.email}`}>{business.email}</a></p>
+            <div className="notice__actions">
+              <a className="btn btn--red" href={`tel:${business.phone.tel}`}><Phone size={16} weight="bold" aria-hidden />{o.call}</a>
+              <a className="btn btn--ghost" href={`sms:${business.phone.tel}`}><ChatText size={16} weight="bold" aria-hidden />{o.text}</a>
+              <a className="btn btn--ghost" href={`mailto:${business.email}?subject=${encodeURIComponent(o.emailSubject)}`}><EnvelopeSimple size={16} weight="bold" aria-hidden />{o.email}</a>
+            </div>
+            <button type="button" className="link notice__change" data-outside-close>{o.tryAnother}</button>
+          </dialog>
         </form>
       )}
     </div>

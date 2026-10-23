@@ -541,6 +541,7 @@
 .notice__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; padding-top: 0.2rem; }
 .notice__actions .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
 @media (max-width: 30em) { .notice__actions .btn { flex: 1 1 auto; justify-content: center; } }
+.notice__change { display: block; margin: 0.75rem 0 0 auto; font-size: 0.9375rem; }
 .doc__download { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; align-items: center; padding: 1rem 1.15rem; border: 1px solid var(--color-rule); border-radius: var(--radius-sm); background: var(--color-card); }
 .doc__download .link { display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 500; }
 .doc__download .soft { color: var(--color-ink-3); font-weight: 400; }
