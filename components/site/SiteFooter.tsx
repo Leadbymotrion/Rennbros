@@ -4,7 +4,25 @@ import { business } from "@/lib/business";
 import { dict, href, servicesIn, type Lang } from "@/lib/i18n";
 import { Wordmark } from "./Wordmark";
 
-const SOCIAL = { instagram: InstagramLogo, facebook: FacebookLogo, whatsapp: WhatsappLogo } as const;
+/** Each network's own mark in its own colours (like Google's G beside them).
+ *  Instagram's gradient is drawn inside the icon's SVG. */
+const SOCIAL = {
+  instagram: () => (
+    <InstagramLogo size={26} weight="fill" color="url(#ig-grad)" aria-hidden>
+      <defs>
+        <radialGradient id="ig-grad" cx="0.3" cy="1.07" r="1.3">
+          <stop offset="0" stopColor="#fdf497" />
+          <stop offset="0.1" stopColor="#fdf497" />
+          <stop offset="0.5" stopColor="#fd5949" />
+          <stop offset="0.68" stopColor="#d6249f" />
+          <stop offset="1" stopColor="#285AEB" />
+        </radialGradient>
+      </defs>
+    </InstagramLogo>
+  ),
+  facebook: () => <FacebookLogo size={26} weight="fill" color="#0866FF" aria-hidden />,
+  whatsapp: () => <WhatsappLogo size={26} weight="fill" color="#25D366" aria-hidden />,
+} as const;
 
 export function SiteFooter({ lang }: { lang: Lang }) {
   const t = dict(lang);
@@ -23,7 +41,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
                 return (
                   <li key={s.name}>
                     <a href={s.href} rel="noopener" target="_blank" aria-label={s.name}>
-                      <Icon size={20} weight="light" aria-hidden />
+                      <Icon />
                     </a>
                   </li>
                 );

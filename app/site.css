@@ -104,7 +104,9 @@
   border: 1px solid var(--color-rule-2); color: var(--color-ink-2); background: var(--color-card);
   transition: border-color 180ms var(--ease-soft), color 180ms var(--ease-soft), transform 320ms var(--ease-out);
 }
-.foot__social a:hover { border-color: var(--color-red); color: var(--color-red-ink); transform: translateY(-2px); }
+.foot__social a:hover { border-color: var(--color-ink-4); transform: translateY(-2px); }
+/* Brand marks keep their own colours on a white chip, in both themes. */
+.foot__social a { background: #fff; }
 .foot__base { padding-block: 1.5rem 2rem; border-top: 1px solid var(--color-rule-2); font-size: 0.9375rem; color: var(--color-ink-3); display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; justify-content: space-between; }
 .foot__square { font-size: 0.85rem; }
 
