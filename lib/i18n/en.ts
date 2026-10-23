@@ -232,6 +232,7 @@ export const en = {
       label: "Fleet and corporate",
       lines: ["Fleet and corporate rates", "Company cars serviced where they park", "Oil, brakes, tires and batteries on site", "Ask for a fleet quote"],
       call: "Call now",
+      callShort: "Call",
     },
     marquee: {
       label: "Trusted by owners of",

@@ -235,6 +235,7 @@ export const fr: Dict = {
       label: "Flottes et entreprises",
       lines: ["Tarifs pour flottes et entreprises", "Véhicules d’entreprise entretenus là où ils sont stationnés", "Huile, freins, pneus et batteries sur place", "Demandez une soumission flotte"],
       call: "Appelez",
+      callShort: "Appeler",
     },
     marquee: {
       label: "La confiance des propriétaires de",

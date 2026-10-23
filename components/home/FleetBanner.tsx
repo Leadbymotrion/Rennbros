@@ -33,7 +33,7 @@ export function FleetBanner({ lang }: { lang: Lang }) {
         </div>
         <a className="fleet__call" href={`tel:${business.phone.tel}`}>
           <Phone size={17} weight="bold" aria-hidden />
-          <span>{f.call}</span>
+          <span className="fleet__call-long">{f.call}</span><span className="fleet__call-short">{f.callShort}</span>
         </a>
       </div>
     </section>
