@@ -4,7 +4,7 @@
   "short_name": "Renn Bros",
   "description": "Mobile mechanic for the West Island and Vaudreuil-Soulanges. Book a visit at your home.",
   "lang": "en-CA",
-  "start_url": "/",
+  "start_url": "/?source=homescreen",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

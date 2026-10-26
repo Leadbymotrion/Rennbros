@@ -2,70 +2,103 @@
 
 import { useEffect } from "react";
 
-/** The build this page came from (set in next.config.ts at build time). */
-const BUILT = process.env.NEXT_PUBLIC_BUILD_ID ?? "";
-/** About three times a week: at most one check every 56 hours. */
-const EVERY = 56 * 60 * 60 * 1000;
+/** At most one check every 48 hours. */
+const EVERY = 48 * 60 * 60 * 1000;
 const LAST_KEY = "rennbros.updateCheckedAt";
+const HOME_KEY = "rennbros.homescreen";
+/** The home-screen icon opens /?source=homescreen (public/site.webmanifest). */
+const MARKER = "source";
+const MARKER_VALUE = "homescreen";
 
-/** Saved to a home screen and opened from there (app mode). */
-const isApp = () =>
-  matchMedia("(display-mode: standalone)").matches ||
-  matchMedia("(display-mode: fullscreen)").matches ||
-  (navigator as Navigator & { standalone?: boolean }).standalone === true;
+const store = {
+  get: (s: Storage, k: string) => { try { return s.getItem(k); } catch { return null; } },
+  set: (s: Storage, k: string, v: string) => { try { s.setItem(k, v); } catch {} },
+};
+
+/** Opened from a home-screen icon: the start_url marker (remembered for the
+ *  session), or the app display modes, or iPhone's navigator.standalone. */
+function isHomeScreen(): boolean {
+  const url = new URL(location.href);
+  if (url.searchParams.get(MARKER) === MARKER_VALUE) {
+    store.set(sessionStorage, HOME_KEY, "1");
+    // Take only the marker out of the address bar; other parameters and #hash stay.
+    url.searchParams.delete(MARKER);
+    try { history.replaceState(history.state, "", url.pathname + url.search + url.hash); } catch {}
+  }
+  return (
+    store.get(sessionStorage, HOME_KEY) === "1" ||
+    ["standalone", "fullscreen", "minimal-ui"].some((m) => matchMedia(`(display-mode: ${m})`).matches) ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  );
+}
+
+/** The live version's fingerprint: the ETag (or Last-Modified) of /api/version,
+ *  which changes only when Netlify publishes a new deploy. */
+async function fingerprint(): Promise<string | null> {
+  try {
+    const r = await fetch("/api/version", { method: "HEAD", cache: "no-store" });
+    if (!r.ok) return null;
+    return r.headers.get("etag") ?? r.headers.get("last-modified");
+  } catch {
+    return null; // offline or a hiccup
+  }
+}
 
 /**
- * Keeps the home-screen app current. A phone freezes a home-screen app in the
- * background and can show the old page when it's reopened; so, about three
- * times a week, when the app is opened or brought back, it asks Netlify which
- * version is live and quietly reloads if there's a newer one.
+ * Keeps a home-screen copy of the site current. Phones keep a home-screen app
+ * paused in memory for days; when it comes back to the front, at most once
+ * every 48 hours, this asks whether a newer version is live and reloads once
+ * if so. Browser tabs and desktop PCs never reload on their own: they get the
+ * newest version on every visit anyway (the pages are sent with
+ * Cache-Control: max-age=0, must-revalidate).
  *
- * Only in app mode: a normal browser tab already gets the latest version from
- * Netlify on every visit. Nothing runs on a schedule while the app is closed
- * (phones don't allow that for web apps); the check happens the next time it
- * is opened. Never mid-booking: once someone has started filling in the
- * booking form, the reload waits.
+ * Never while a form or popup is open or someone is typing: it skips and tries
+ * again the next time the app comes back.
  */
 export function AutoUpdate() {
   useEffect(() => {
-    if (!BUILT || !isApp()) return;
-    let busy = false; // the visitor has started filling in the booking form
-
-    const onBooking = () => /\/book\/?$/.test(location.pathname);
-    const markBusy = (e: Event) => {
-      if (onBooking() && (e.target as Element | null)?.closest?.("form")) busy = true;
+    if (!isHomeScreen()) return;
+    let atLoad: string | null = null;
+    let started = false; // the visitor has started filling in a form on this page
+    const markStarted = (e: Event) => {
+      if ((e.target as Element | null)?.closest?.("form")) started = true;
     };
 
-    const due = () => {
-      try {
-        return Date.now() - Number(localStorage.getItem(LAST_KEY) ?? 0) >= EVERY;
-      } catch {
-        return true;
-      }
+    const busy = () => {
+      const a = document.activeElement as HTMLElement | null;
+      const typing = !!a && (a.matches?.("input, textarea, select") || a.isContentEditable);
+      let popup = !!document.querySelector("dialog[open], .sheet[data-open='true']");
+      try { popup ||= !!document.querySelector("[popover]:popover-open"); } catch {} // older browsers lack :popover-open
+      return started || typing || popup;
     };
+
+    const due = () => Date.now() - Number(store.get(localStorage, LAST_KEY) ?? 0) >= EVERY;
 
     const check = async () => {
-      if (document.visibilityState !== "visible" || busy || !due()) return;
-      try {
-        const r = await fetch("/api/version", { cache: "no-store" });
-        const { build } = (await r.json()) as { build?: string };
-        try { localStorage.setItem(LAST_KEY, String(Date.now())); } catch {}
-        if (build && build !== BUILT && !busy) location.reload();
-      } catch {
-        // offline or a hiccup: try again the next time the app is opened
-      }
+      if (document.visibilityState !== "visible" || !due() || busy()) return;
+      const now = await fingerprint();
+      if (!now) return; // couldn't ask: try again on the next return
+      store.set(localStorage, LAST_KEY, String(Date.now()));
+      if (atLoad && now !== atLoad && !busy()) location.reload();
     };
 
-    check();
-    document.addEventListener("visibilitychange", check);
-    window.addEventListener("pageshow", check); // back from the browser's page cache
-    document.addEventListener("input", markBusy, true);
-    document.addEventListener("change", markBusy, true);
+    const onVisible = () => { if (document.visibilityState === "visible") check(); };
+    const onPageShow = (e: PageTransitionEvent) => { if (e.persisted) check(); };
+
+    // The fingerprint on load counts as a check: the next one is 48 h later.
+    fingerprint().then((f) => {
+      atLoad = f;
+      if (f) store.set(localStorage, LAST_KEY, String(Date.now()));
+    });
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("pageshow", onPageShow);
+    document.addEventListener("input", markStarted, true);
+    document.addEventListener("change", markStarted, true);
     return () => {
-      document.removeEventListener("visibilitychange", check);
-      window.removeEventListener("pageshow", check);
-      document.removeEventListener("input", markBusy, true);
-      document.removeEventListener("change", markBusy, true);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("input", markStarted, true);
+      document.removeEventListener("change", markStarted, true);
     };
   }, []);
   return null;
