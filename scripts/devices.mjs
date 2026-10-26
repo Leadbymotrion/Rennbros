@@ -22,6 +22,10 @@ const devices = [
   ["android-360", 360, 800, 3, true, ANDROID],
   ["iphone-390", 390, 844, 3, true, IPHONE],
   ["iphone-430", 430, 932, 3, true, IPHONE],
+  // iPhone Duo (foldable): outer screen folded, inner screen unfolded, both ways.
+  ["duo-folded-466", 466, 678, 3, true, IPHONE],
+  ["duo-open-626", 626, 890, 3, true, IPHONE],
+  ["duo-open-land-890", 890, 626, 3, true, IPHONE],
   ["ipad-768", 768, 1024, 2, true, IPAD],
   ["ipad-820", 820, 1180, 2, true, IPAD],
   ["ipad-1024", 1024, 768, 2, true, IPAD],
